@@ -7,9 +7,9 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navItems = [
-    { name: "Dashboard", href: "#dashboard", icon: TrendingUp },
-    { name: "Emergency Map", href: "/find-donors", icon: MapPin },
-    { name: "Emergency Resources", href: "/emergency-resources", icon: Users },
+    { name: "Find Donor", href: "/find-donors", icon: MapPin },
+    { name: "Register Donor", href: "/donate", icon: Heart },
+    { name: "Register Organization", href: "/register-organization", icon: Users },
   ];
 
   return (
@@ -17,7 +17,7 @@ const Header = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
-          <div className="flex items-center space-x-2">
+          <Link to="/" className="flex items-center space-x-2">
             <div className="p-2 bg-white/20 rounded-lg">
               <Heart className="h-8 w-8 text-white" />
             </div>
@@ -25,30 +25,19 @@ const Header = () => {
               <h1 className="text-2xl font-bold text-white">HopeHUB</h1>
               <p className="text-white/80 text-xs">Emergency Aid Platform</p>
             </div>
-          </div>
+          </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
-              item.href.startsWith('#') ? (
-                <a
-                  key={item.name}
-                  href={item.href}
-                  className="flex items-center space-x-2 text-white/90 hover:text-white transition-smooth"
-                >
-                  <item.icon className="h-4 w-4" />
-                  <span>{item.name}</span>
-                </a>
-              ) : (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className="flex items-center space-x-2 text-white/90 hover:text-white transition-smooth"
-                >
-                  <item.icon className="h-4 w-4" />
-                  <span>{item.name}</span>
-                </Link>
-              )
+              <Link
+                key={item.name}
+                to={item.href}
+                className="flex items-center space-x-2 text-white/90 hover:text-white transition-smooth"
+              >
+                <item.icon className="h-4 w-4" />
+                <span>{item.name}</span>
+              </Link>
             ))}
           </nav>
 
@@ -84,27 +73,15 @@ const Header = () => {
           <div className="md:hidden py-4 border-t border-white/20">
             <nav className="flex flex-col space-y-4">
               {navItems.map((item) => (
-                item.href.startsWith('#') ? (
-                  <a
-                    key={item.name}
-                    href={item.href}
-                    className="flex items-center space-x-2 text-white/90 hover:text-white transition-smooth py-2"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <item.icon className="h-4 w-4" />
-                    <span>{item.name}</span>
-                  </a>
-                ) : (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    className="flex items-center space-x-2 text-white/90 hover:text-white transition-smooth py-2"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <item.icon className="h-4 w-4" />
-                    <span>{item.name}</span>
-                  </Link>
-                )
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className="flex items-center space-x-2 text-white/90 hover:text-white transition-smooth py-2"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span>{item.name}</span>
+                </Link>
               ))}
               <div className="flex flex-col space-y-2 pt-4 border-t border-white/20">
                 <Link to="/auth" onClick={() => setIsMenuOpen(false)}>

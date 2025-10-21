@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Heart, ArrowLeft, Package, MapPin, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { z } from "zod";
+
+const donationSchema = z.object({
+  organization: z.string().trim().min(1, "Organization name is required").max(100),
+  contactPerson: z.string().trim().min(1, "Contact person name is required").max(100),
+  phone: z.string().regex(/^\d{10}$/, "Phone number must be exactly 10 digits"),
+  email: z.string().trim().email("Invalid email address").max(255).optional().or(z.literal("")),
+  foodType: z.string().min(1, "Food type is required"),
+  quantity: z.string().trim().min(1, "Quantity is required").max(100),
+  location: z.string().trim().min(1, "Location is required").max(500),
+  availableUntil: z.string().min(1, "Available until date is required"),
+  description: z.string().max(1000).optional(),
+});
 
 const Donate = () => {
   const [formData, setFormData] = useState({
@@ -22,27 +35,33 @@ const Donate = () => {
     description: "",
     availableUntil: ""
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrors({});
     setIsSubmitting(true);
     
     try {
+      // Validate form data
+      const validatedData = donationSchema.parse(formData);
+
       const { error } = await supabase
         .from('food_donations')
         .insert([
           {
-            organization: formData.organization,
-            contact_person: formData.contactPerson,
-            phone: formData.phone,
-            food_type: formData.foodType,
-            quantity: formData.quantity,
-            location: formData.location,
-            description: formData.description,
-            available_until: formData.availableUntil,
-            email: formData.email,
+            organization: validatedData.organization,
+            contact_person: validatedData.contactPerson,
+            phone: validatedData.phone,
+            food_type: validatedData.foodType,
+            quantity: validatedData.quantity,
+            location: validatedData.location,
+            description: validatedData.description || null,
+            available_until: validatedData.availableUntil,
+            email: validatedData.email || null,
             status: 'available'
           }
         ]);
@@ -68,13 +87,31 @@ const Donate = () => {
         description: "",
         availableUntil: ""
       });
+
+      // Navigate to home after 2 seconds
+      setTimeout(() => navigate("/"), 2000);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to register donation. Please try again.",
-        variant: "destructive",
-      });
-      console.error('Error submitting donation:', error);
+      if (error instanceof z.ZodError) {
+        const fieldErrors: Record<string, string> = {};
+        error.errors.forEach((err) => {
+          if (err.path[0]) {
+            fieldErrors[err.path[0] as string] = err.message;
+          }
+        });
+        setErrors(fieldErrors);
+        toast({
+          title: "Validation Error",
+          description: "Please check the form for errors.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to register donation. Please try again.",
+          variant: "destructive",
+        });
+        console.error('Error submitting donation:', error);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -82,6 +119,10 @@ const Donate = () => {
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: "" }));
+    }
   };
 
   return (
@@ -97,10 +138,10 @@ const Donate = () => {
             Back to Home
           </Link>
           
-          <div className="flex items-center space-x-2">
+          <Link to="/" className="flex items-center space-x-2">
             <Heart className="h-6 w-6 text-white" />
             <span className="text-white font-semibold">HopeHUB</span>
-          </div>
+          </Link>
         </div>
 
         <div className="max-w-2xl mx-auto">
@@ -121,33 +162,42 @@ const Donate = () => {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="organization">Organization/Restaurant Name</Label>
+                    <Label htmlFor="organization">Organization/Restaurant Name *</Label>
                     <Input
                       id="organization"
                       placeholder="Enter your organization name"
                       value={formData.organization}
                       onChange={(e) => handleInputChange("organization", e.target.value)}
-                      required
+                      className={errors.organization ? "border-red-500" : ""}
                     />
+                    {errors.organization && (
+                      <p className="text-sm text-red-500">{errors.organization}</p>
+                    )}
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="contactPerson">Contact Person</Label>
+                    <Label htmlFor="contactPerson">Contact Person *</Label>
                     <Input
                       id="contactPerson"
-                      placeholder="Your name"
+                      placeholder="Full name"
                       value={formData.contactPerson}
                       onChange={(e) => handleInputChange("contactPerson", e.target.value)}
-                      required
+                      className={errors.contactPerson ? "border-red-500" : ""}
                     />
+                    {errors.contactPerson && (
+                      <p className="text-sm text-red-500">{errors.contactPerson}</p>
+                    )}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="foodType">Food Type</Label>
-                    <Select onValueChange={(value) => handleInputChange("foodType", value)}>
-                      <SelectTrigger>
+                    <Label htmlFor="foodType">Food Type *</Label>
+                    <Select 
+                      onValueChange={(value) => handleInputChange("foodType", value)}
+                      value={formData.foodType}
+                    >
+                      <SelectTrigger className={errors.foodType ? "border-red-500" : ""}>
                         <SelectValue placeholder="Select food type" />
                       </SelectTrigger>
                       <SelectContent>
@@ -159,79 +209,104 @@ const Donate = () => {
                         <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
                     </Select>
+                    {errors.foodType && (
+                      <p className="text-sm text-red-500">{errors.foodType}</p>
+                    )}
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="quantity">Quantity/Servings</Label>
+                    <Label htmlFor="quantity">Quantity/Servings *</Label>
                     <Input
                       id="quantity"
                       placeholder="e.g., 50 servings, 10kg"
                       value={formData.quantity}
                       onChange={(e) => handleInputChange("quantity", e.target.value)}
-                      required
+                      className={errors.quantity ? "border-red-500" : ""}
                     />
+                    {errors.quantity && (
+                      <p className="text-sm text-red-500">{errors.quantity}</p>
+                    )}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="location">Pickup Location</Label>
+                    <Label htmlFor="location">Pickup Location *</Label>
                     <Input
                       id="location"
                       placeholder="Address or area"
                       value={formData.location}
                       onChange={(e) => handleInputChange("location", e.target.value)}
-                      required
+                      className={errors.location ? "border-red-500" : ""}
                     />
+                    {errors.location && (
+                      <p className="text-sm text-red-500">{errors.location}</p>
+                    )}
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="availableUntil">Available Until</Label>
+                    <Label htmlFor="availableUntil">Available Until *</Label>
                     <Input
                       id="availableUntil"
                       type="datetime-local"
                       value={formData.availableUntil}
                       onChange={(e) => handleInputChange("availableUntil", e.target.value)}
-                      required
+                      className={errors.availableUntil ? "border-red-500" : ""}
                       min={new Date().toISOString().slice(0, 16)}
                     />
+                    {errors.availableUntil && (
+                      <p className="text-sm text-red-500">{errors.availableUntil}</p>
+                    )}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Contact Phone</Label>
+                    <Label htmlFor="phone">Contact Phone *</Label>
                     <Input
                       id="phone"
                       type="tel"
-                      placeholder="Your phone number"
+                      placeholder="10 digit phone number"
                       value={formData.phone}
-                      onChange={(e) => handleInputChange("phone", e.target.value)}
-                      required
+                      onChange={(e) => handleInputChange("phone", e.target.value.replace(/\D/g, "").slice(0, 10))}
+                      className={errors.phone ? "border-red-500" : ""}
+                      maxLength={10}
                     />
+                    {errors.phone && (
+                      <p className="text-sm text-red-500">{errors.phone}</p>
+                    )}
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="email">Contact Email</Label>
+                    <Label htmlFor="email">Contact Email (optional)</Label>
                     <Input
                       id="email"
                       type="email"
                       placeholder="your.email@example.com"
                       value={formData.email}
                       onChange={(e) => handleInputChange("email", e.target.value)}
+                      className={errors.email ? "border-red-500" : ""}
                     />
+                    {errors.email && (
+                      <p className="text-sm text-red-500">{errors.email}</p>
+                    )}
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description">Additional Details</Label>
+                  <Label htmlFor="description">Additional Details (optional)</Label>
                   <Textarea
                     id="description"
                     placeholder="Any special instructions or additional information about the food donation"
                     value={formData.description}
                     onChange={(e) => handleInputChange("description", e.target.value)}
+                    className={errors.description ? "border-red-500" : ""}
                     rows={3}
+                    maxLength={1000}
                   />
+                  {errors.description && (
+                    <p className="text-sm text-red-500">{errors.description}</p>
+                  )}
                 </div>
 
                 <Button type="submit" className="w-full" disabled={isSubmitting}>

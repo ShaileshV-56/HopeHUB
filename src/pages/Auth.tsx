@@ -5,17 +5,49 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Heart, ArrowLeft } from "lucide-react";
+import { z } from "zod";
+
+const signUpSchema = z.object({
+  name: z.string().trim().min(1, "Name is required").max(100),
+  email: z.string().trim().email("Invalid email address").max(255),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+const signInSchema = z.object({
+  email: z.string().trim().email("Invalid email address").max(255),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement authentication logic
-    console.log("Auth form submitted", { email, password, name, isSignUp });
+    setErrors({});
+
+    try {
+      if (isSignUp) {
+        signUpSchema.parse({ name, email, password });
+      } else {
+        signInSchema.parse({ email, password });
+      }
+      // TODO: Implement actual authentication logic
+      console.log("Auth form submitted", { email, password, name, isSignUp });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const fieldErrors: Record<string, string> = {};
+        error.errors.forEach((err) => {
+          if (err.path[0]) {
+            fieldErrors[err.path[0] as string] = err.message;
+          }
+        });
+        setErrors(fieldErrors);
+      }
+    }
   };
 
   return (
@@ -66,9 +98,15 @@ const Auth = () => {
                     type="text"
                     placeholder="Enter your full name"
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
+                    onChange={(e) => {
+                      setName(e.target.value);
+                      if (errors.name) setErrors(prev => ({ ...prev, name: "" }));
+                    }}
+                    className={errors.name ? "border-red-500" : ""}
                   />
+                  {errors.name && (
+                    <p className="text-sm text-red-500">{errors.name}</p>
+                  )}
                 </div>
               )}
               
@@ -79,9 +117,15 @@ const Auth = () => {
                   type="email"
                   placeholder="Enter your email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (errors.email) setErrors(prev => ({ ...prev, email: "" }));
+                  }}
+                  className={errors.email ? "border-red-500" : ""}
                 />
+                {errors.email && (
+                  <p className="text-sm text-red-500">{errors.email}</p>
+                )}
               </div>
               
               <div className="space-y-2">
@@ -89,11 +133,17 @@ const Auth = () => {
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Enter your password"
+                  placeholder="Enter your password (min 6 characters)"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (errors.password) setErrors(prev => ({ ...prev, password: "" }));
+                  }}
+                  className={errors.password ? "border-red-500" : ""}
                 />
+                {errors.password && (
+                  <p className="text-sm text-red-500">{errors.password}</p>
+                )}
               </div>
 
               <Button type="submit" className="w-full">
