@@ -35,7 +35,10 @@ export const donorsRouter = Router();
 // Register donor
 // POST /api/donors/register
 
-donorsRouter.post('/register', validateBody(registerSchema), async (req, res, next) => {
+// Deprecated: blood donors registration is disabled in food-only mode
+donorsRouter.post('/register', (_req, res) => {
+  return res.status(410).json({ success: false, message: 'Blood donor registration is no longer supported.' });
+});
   try {
     const body = (req as any).validatedBody as z.infer<typeof registerSchema>;
     const result = await withClient(async (client) => {
@@ -69,71 +72,18 @@ donorsRouter.post('/register', validateBody(registerSchema), async (req, res, ne
 // GET /api/donors
 // Optional filters: bloodGroup, city, available
 
-donorsRouter.get('/', async (req, res, next) => {
-  try {
-    const { bloodGroup, city, available } = req.query as Record<string, string | undefined>;
-    const clauses: string[] = [];
-    const params: any[] = [];
-    if (bloodGroup) { clauses.push('blood_group = $' + (params.length + 1)); params.push(bloodGroup); }
-    if (city) { clauses.push('city = $' + (params.length + 1)); params.push(city); }
-    if (typeof available !== 'undefined') { clauses.push('available = $' + (params.length + 1)); params.push(available === 'true'); }
-    const where = clauses.length ? 'WHERE ' + clauses.join(' AND ') : '';
-    const { rows } = await withClient((client) => client.query(`SELECT * FROM blood_donors ${where} ORDER BY created_at DESC`, params));
-    res.json({ success: true, data: rows });
-  } catch (err) {
-    next(err);
-  }
+donorsRouter.get('/', (_req, res) => {
+  return res.status(410).json({ success: false, message: 'Blood donor listing is no longer supported.' });
 });
 
 // GET /api/donors/:id
 
-donorsRouter.get('/:id', async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const { rows } = await withClient((client) => client.query('SELECT * FROM blood_donors WHERE id = $1', [id]));
-    if (!rows[0]) return res.status(404).json({ success: false, message: 'Donor not found' });
-    res.json({ success: true, data: rows[0] });
-  } catch (err) {
-    next(err);
-  }
+donorsRouter.get('/:id', (_req, res) => {
+  return res.status(410).json({ success: false, message: 'Blood donor details are no longer supported.' });
 });
 
 // PUT /api/donors/:id
 
-donorsRouter.put('/:id', validateBody(updateSchema), async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const body = (req as any).validatedBody as z.infer<typeof updateSchema>;
-    const fields: string[] = [];
-    const params: any[] = [];
-
-    const mapping: Record<string, any> = {
-      full_name: body.fullName,
-      email: body.email,
-      phone: body.phone,
-      blood_group: body.bloodGroup,
-      age: body.age,
-      address: body.address,
-      city: body.city,
-      state: body.state,
-      available: body.available,
-      last_donation_date: body.lastDonationDate,
-      medical_conditions: body.medicalConditions,
-    };
-
-    Object.entries(mapping).forEach(([col, val]) => {
-      if (typeof val !== 'undefined') {
-        params.push(val);
-        fields.push(`${col} = $${params.length}`);
-      }
-    });
-
-    if (fields.length === 0) return res.status(400).json({ success: false, message: 'No fields to update' });
-
-    params.push(id);
-    const { rows } = await withClient((client) => client.query(`UPDATE blood_donors SET ${fields.join(', ')}, updated_at = now() WHERE id = $${params.length} RETURNING *`, params));
-    res.json({ success: true, data: rows[0] });
-  } catch (err) {
-    next(err);
-  }
+donorsRouter.put('/:id', (_req, res) => {
+  return res.status(410).json({ success: false, message: 'Blood donor update is no longer supported.' });
 });
