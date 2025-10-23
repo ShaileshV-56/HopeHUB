@@ -5,7 +5,7 @@
  * 
  * SECURITY NOTE:
  * - Never store sensitive API keys in this file for production
- * - Use Supabase Edge Functions with secrets for server-side API calls
+ * - Use your Node/Express backend for server-side API calls
  * - Only store public/publishable keys here
  */
 
@@ -49,12 +49,12 @@ export const API_ENDPOINTS = {
   // AI Services
   ai: {
     openai: {
-      edgeFunction: 'chat-ai',
-      description: 'OpenAI GPT models (requires OPENAI_API_KEY in Edge Function secrets)',
+      endpoint: '/api/ai/chat',
+      description: 'OpenAI proxy via backend',
     },
     perplexity: {
-      edgeFunction: 'perplexity-search',
-      description: 'Perplexity AI search (requires PERPLEXITY_API_KEY)',
+      endpoint: '/api/ai/search',
+      description: 'Perplexity proxy via backend',
     },
   },
 
@@ -218,43 +218,7 @@ export const getWeatherIconUrl = (iconCode: string, service: 'openweather' | 'we
   return `https:${iconCode}`;
 };
 
-// ============================================
-// SUPABASE EDGE FUNCTION HELPERS
-// ============================================
-
-/**
- * Call a Supabase Edge Function
- * Use this for any API calls that require secret keys
- */
-export const callEdgeFunction = async <T = any>(
-  functionName: string,
-  payload: Record<string, any>
-): Promise<{ data: T | null; error: Error | null }> => {
-  try {
-    const response = await fetch(
-      `https://suehzckzvcqtfndaypmo.supabase.co/functions/v1/${functionName}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify(payload),
-      }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: response.statusText }));
-      throw new Error(errorData.error || 'Edge function call failed');
-    }
-
-    const data = await response.json();
-    return { data, error: null };
-  } catch (error) {
-    console.error(`Edge function ${functionName} error:`, error);
-    return { data: null, error: error as Error };
-  }
-};
+// Removed Supabase Edge Function helpers. Use backend endpoints instead.
 
 // ============================================
 // USAGE EXAMPLES
