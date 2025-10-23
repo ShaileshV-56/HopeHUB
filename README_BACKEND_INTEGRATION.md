@@ -6,13 +6,13 @@ This project has been updated to use a Node.js/Express backend instead of Supaba
 
 ### 1. Update Backend URL
 
-Edit `src/services/api.ts` and update the `BASE_URL` constant:
+Edit `frontend/src/services/api.ts` and update the `BASE_URL` constant:
 
 ```typescript
 const BASE_URL = 'http://localhost:5000/api'; // Change to your backend URL
 ```
 
-Or update `src/config/backend.ts`:
+Or update `frontend/src/config/backend.ts`:
 
 ```typescript
 export const BACKEND_URL = 'http://localhost:5000'; // Your backend URL
@@ -91,20 +91,16 @@ For errors:
 
 The following files have been updated to remove Supabase and use REST API calls:
 
-1. **`src/services/api.ts`** - New API service layer
-2. **`src/pages/Donate.tsx`** - Food donation form
-3. **`src/pages/RegisterOrganization.tsx`** - Organization registration form
-4. **`src/pages/Auth.tsx`** - Authentication (sign up/sign in)
-5. **`src/config/backend.ts`** - Backend configuration
-6. **`src/App.tsx`** - Removed Supabase imports
+1. **`frontend/src/services/api.ts`** - New API service layer
+2. **`frontend/src/pages/Donate.tsx`** - Food donation form
+3. **`frontend/src/pages/RegisterOrganization.tsx`** - Organization registration form
+4. **`frontend/src/pages/Auth.tsx`** - Authentication (sign up/sign in)
+5. **`frontend/src/config/backend.ts`** - Backend configuration
+6. **`frontend/src/App.tsx`** - Removed Supabase imports
 
 ## Files/Folders to Remove (Optional)
 
-Since you're no longer using Supabase, you can optionally remove:
-
-- `src/integrations/supabase/` folder
-- `supabase/` folder (edge functions, migrations, etc.)
-- `@supabase/supabase-js` dependency
+Supabase is no longer used.
 
 ## Development
 

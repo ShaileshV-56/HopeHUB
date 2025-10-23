@@ -14,10 +14,10 @@
 // ============================================
 
 export const API_ENDPOINTS = {
-  // Email Service (Resend - use via Edge Function)
+  // Email Service (handled by backend integration)
   email: {
-    edgeFunction: 'send-email',
-    description: 'Send emails via Resend API (requires RESEND_API_KEY in Edge Function secrets)',
+    endpoint: '/api/integrations/email',
+    description: 'Send emails via backend (requires server-side RESEND_API_KEY)',
   },
 
   // SMS/Messaging Services
@@ -218,19 +218,23 @@ export const getWeatherIconUrl = (iconCode: string, service: 'openweather' | 'we
   return `https:${iconCode}`;
 };
 
-// Removed Supabase Edge Function helpers. Use backend endpoints instead.
+// Use backend endpoints for all secret-bound integrations.
 
 // ============================================
 // USAGE EXAMPLES
 // ============================================
 
 /**
- * Example: Send email via Edge Function
+ * Example: Send email via backend
  * 
- * const { data, error } = await callEdgeFunction('send-email', {
- *   to: 'user@example.com',
- *   subject: 'Welcome to HopeHUB',
- *   html: '<h1>Welcome!</h1>',
+ * await fetch(API_ENDPOINTS.email.endpoint, {
+ *   method: 'POST',
+ *   headers: { 'Content-Type': 'application/json' },
+ *   body: JSON.stringify({
+ *     to: 'user@example.com',
+ *     subject: 'Welcome to HopeHUB',
+ *     html: '<h1>Welcome!</h1>',
+ *   }),
  * });
  */
 
