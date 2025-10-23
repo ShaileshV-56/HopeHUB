@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Heart, ArrowLeft } from "lucide-react";
 import { z } from "zod";
-import { authApi, setAuthToken } from "@/services/api";
+import { authApi } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
 
 const signUpSchema = z.object({
@@ -94,14 +94,6 @@ const Auth = () => {
           return;
         }
 
-        // Persist token and set header for future requests
-        const token = (result.data as any)?.token;
-        if (token) {
-          try {
-            localStorage.setItem('token', token);
-          } catch {}
-          setAuthToken(token);
-        }
         toast({
           title: "Welcome back!",
           description: "You have been signed in successfully.",

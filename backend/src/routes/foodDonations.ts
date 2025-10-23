@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { validateBody } from '../middleware/validate';
-import { authRequired } from '../middleware/auth';
 import { withClient } from '../db/pool';
 
 const createSchema = z.object({
@@ -31,8 +30,8 @@ const updateSchema = z.object({
 
 export const foodDonationsRouter = Router();
 
-// POST /api/donations/food (auth required)
-foodDonationsRouter.post('/', authRequired, validateBody(createSchema), async (req, res, next) => {
+// POST /api/donations/food
+foodDonationsRouter.post('/', validateBody(createSchema), async (req, res, next) => {
   try {
     const body = (req as any).validatedBody as z.infer<typeof createSchema>;
     const { rows } = await withClient((client) => client.query(

@@ -5,33 +5,34 @@ import { API_URL } from '@/config/backend';
 import { createApiClient, ApiResponse } from 'api/client';
 const BASE_URL = API_URL; // Centralized backend URL
 
-let token: string | null = null;
-export const setAuthToken = (t: string | null) => { token = t; };
-const apiCall = async (endpoint: string, options: RequestInit = {}) => {
-  const call = createApiClient(BASE_URL);
-  const headers: HeadersInit = {
-    ...(options.headers || {}),
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-  return call(endpoint, { ...options, headers });
-};
+const apiCall = createApiClient(BASE_URL);
 
-// Food Donor Registration (repurposed): use food donations endpoint
-export const foodDonorApi = {
-  register: async (payload: {
-    organization: string;
-    contactPerson: string;
-    phone: string;
-    email?: string | null;
-    foodType: string;
-    quantity: string;
-    location: string;
-    description?: string | null;
-    availableUntil: string;
-  }) => {
-    return apiCall('/donations/food', {
+// Blood Donor APIs
+export const bloodDonorApi = {
+  register: async (donorData: any) => {
+    return apiCall('/donors/register', {
       method: 'POST',
-      body: JSON.stringify(payload),
+      body: JSON.stringify(donorData),
+    });
+  },
+
+  getAll: async (filters?: any) => {
+    const queryParams = filters ? `?${new URLSearchParams(filters)}` : '';
+    return apiCall(`/donors${queryParams}`, {
+      method: 'GET',
+    });
+  },
+
+  getById: async (id: string) => {
+    return apiCall(`/donors/${id}`, {
+      method: 'GET',
+    });
+  },
+
+  update: async (id: string, donorData: any) => {
+    return apiCall(`/donors/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(donorData),
     });
   },
 };
