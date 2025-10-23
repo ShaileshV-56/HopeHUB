@@ -2,50 +2,10 @@
 // Update the BASE_URL to point to your Node.js/Express backend
 
 import { API_URL } from '@/config/backend';
+import { createApiClient, ApiResponse } from 'api/client';
 const BASE_URL = API_URL; // Centralized backend URL
 
-interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  message?: string;
-  error?: string;
-}
-
-// Generic API call function
-async function apiCall<T = any>(
-  endpoint: string,
-  options: RequestInit = {}
-): Promise<ApiResponse<T>> {
-  try {
-    const response = await fetch(`${BASE_URL}${endpoint}`, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      return {
-        success: false,
-        error: data.message || 'An error occurred',
-      };
-    }
-
-    return {
-      success: true,
-      data: data.data || data,
-      message: data.message,
-    };
-  } catch (error: any) {
-    return {
-      success: false,
-      error: error.message || 'Network error occurred',
-    };
-  }
-}
+const apiCall = createApiClient(BASE_URL);
 
 // Blood Donor APIs
 export const bloodDonorApi = {

@@ -2,7 +2,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { pool } from '../db/pool';
 
-const migrationsDir = path.resolve(process.cwd(), 'migrations');
+// Resolve migrations directory to support both local dev and Docker
+// Priority: MIGRATIONS_DIR env -> ./migrations (inside app) -> ../database/migrations (monorepo)
+const defaultMigrationsDir = fs.existsSync(path.resolve(process.cwd(), 'migrations'))
+  ? path.resolve(process.cwd(), 'migrations')
+  : path.resolve(__dirname, '../../../database/migrations');
+const migrationsDir = process.env.MIGRATIONS_DIR
+  ? path.resolve(process.env.MIGRATIONS_DIR)
+  : defaultMigrationsDir;
 
 async function ensureMigrationsTable() {
   await pool.query(`

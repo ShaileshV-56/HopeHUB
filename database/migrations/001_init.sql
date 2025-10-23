@@ -1,4 +1,4 @@
--- Core tables mirroring Supabase schema
+-- Core tables for HopeHUB backend
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
