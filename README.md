@@ -1,73 +1,90 @@
-# Welcome to your Lovable project
+# HopeHUB - Food Donation Platform
 
-## Project info
+A full-stack application connecting food donors with organizations in need, built with React frontend and Node.js/Express backend.
 
-**URL**: https://lovable.dev/projects/0dd4f76d-4b4b-40e5-8b92-cfae173a69bb
+## 🌟 Features
 
-## How can I edit this code?
+- **Food Donation Management** - Submit and track food donations
+- **Organization Registration** - Organizations can register and request donations
+- **Donor Management** - Donor profiles and donation history
+- **Real-time Dashboard** - Statistics and analytics
+- **RESTful API** - Complete backend API with PostgreSQL
 
-There are several ways of editing your application.
+## 🏗️ Project Structure
 
-**Use Lovable**
+HopeHUB/
+├── frontend/ # React Vite application
+├── backend/ # Node.js Express API
+├── database/ # PostgreSQL migrations and setup
+├── api/ # API configuration and routes
+└── README.md
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/0dd4f76d-4b4b-40e5-8b92-cfae173a69bb) and start prompting.
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🚀 Quick Start
 
-**Use your preferred IDE**
+### Prerequisites
+- Node.js 18+
+- PostgreSQL
+- Docker (optional)
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+### Backend Setup
+```bash
+cd backend
+npm install
+cp .env.example .env
+# Configure your database in .env
+docker-compose up -d
+npm run migrate
 npm run dev
-```
 
-**Edit a file directly in GitHub**
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Frontend Setup
 
-**Use GitHub Codespaces**
+cd frontend
+npm install
+npm run dev
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+📚 Tech Stack
+Frontend:
 
-## What technologies are used for this project?
+React with TypeScript
 
-This project is built with:
+Vite
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Tailwind CSS
 
-## How can I deploy this project?
+shadcn/ui components
 
-Simply open [Lovable](https://lovable.dev/projects/0dd4f76d-4b4b-40e5-8b92-cfae173a69bb) and click on Share -> Publish.
+Backend:
 
-## Can I connect a custom domain to my Lovable project?
+Node.js with Express
 
-Yes, you can!
+TypeScript
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+PostgreSQL with pg
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+Docker & Docker Compose
+
+🔧 API Endpoints
+GET /api/health - Health check
+
+POST /api/auth/login - User authentication
+
+GET /api/donors - Donor management
+
+POST /api/donations/food - Food donations
+
+GET /api/organizations - Organization management
+
+POST /api/donation-requests - Donation requests
+
+GET /api/stats - Dashboard statistics
+
+
+🐳 Docker Deployment
+
+# Start all services
+docker-compose up -d
+
+# Stop services
+docker-compose down
