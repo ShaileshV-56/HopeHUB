@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Heart, ArrowLeft } from "lucide-react";
 import { z } from "zod";
+import { authApi } from "@/services/api";
+import { useToast } from "@/hooks/use-toast";
 
 const signUpSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100),
@@ -24,29 +26,88 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
+    setIsSubmitting(true);
 
     try {
       if (isSignUp) {
-        signUpSchema.parse({ name, email, password });
-      } else {
-        signInSchema.parse({ email, password });
-      }
-      // TODO: Implement actual authentication logic
-      console.log("Auth form submitted", { email, password, name, isSignUp });
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const fieldErrors: Record<string, string> = {};
-        error.errors.forEach((err) => {
-          if (err.path[0]) {
-            fieldErrors[err.path[0] as string] = err.message;
-          }
+        const validation = signUpSchema.safeParse({ name, email, password });
+        if (!validation.success) {
+          const fieldErrors: Record<string, string> = {};
+          validation.error.errors.forEach((err) => {
+            if (err.path[0]) {
+              fieldErrors[err.path[0] as string] = err.message;
+            }
+          });
+          setErrors(fieldErrors);
+          setIsSubmitting(false);
+          return;
+        }
+
+        const result = await authApi.signup({ name, email, password });
+        
+        if (!result.success) {
+          toast({
+            title: "Error",
+            description: result.error || "Failed to create account",
+            variant: "destructive",
+          });
+          setIsSubmitting(false);
+          return;
+        }
+
+        toast({
+          title: "Success!",
+          description: "Account created successfully. Please sign in.",
         });
-        setErrors(fieldErrors);
+        setIsSignUp(false);
+        setPassword("");
+      } else {
+        const validation = signInSchema.safeParse({ email, password });
+        if (!validation.success) {
+          const fieldErrors: Record<string, string> = {};
+          validation.error.errors.forEach((err) => {
+            if (err.path[0]) {
+              fieldErrors[err.path[0] as string] = err.message;
+            }
+          });
+          setErrors(fieldErrors);
+          setIsSubmitting(false);
+          return;
+        }
+
+        const result = await authApi.signin({ email, password });
+        
+        if (!result.success) {
+          toast({
+            title: "Error",
+            description: result.error || "Invalid email or password",
+            variant: "destructive",
+          });
+          setIsSubmitting(false);
+          return;
+        }
+
+        toast({
+          title: "Welcome back!",
+          description: "You have been signed in successfully.",
+        });
+        navigate("/");
       }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "An error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -146,8 +207,8 @@ const Auth = () => {
                 )}
               </div>
 
-              <Button type="submit" className="w-full">
-                {isSignUp ? "Create Account" : "Sign In"}
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? "Please wait..." : (isSignUp ? "Create Account" : "Sign In")}
               </Button>
             </form>
 

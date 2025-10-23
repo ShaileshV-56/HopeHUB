@@ -6,9 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Heart, ArrowLeft, Building2, MapPin, Phone } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import { helperOrgApi } from "@/services/api";
 
 const organizationSchema = z.object({
   organizationName: z.string().trim().min(1, "Organization name is required").max(100),
@@ -47,23 +47,18 @@ const RegisterOrganization = () => {
         capacity: formData.capacity ? parseInt(formData.capacity) : undefined,
       });
 
-      const { error } = await supabase
-        .from('helper_organizations')
-        .insert([
-          {
-            organization_name: validatedData.organizationName,
-            contact_person: validatedData.contactPerson,
-            phone: validatedData.phone,
-            email: validatedData.email,
-            address: validatedData.address,
-            capacity: validatedData.capacity,
-            specialization: validatedData.specialization || null,
-            status: 'active'
-          }
-        ]);
+      const result = await helperOrgApi.register({
+        organizationName: validatedData.organizationName,
+        contactPerson: validatedData.contactPerson,
+        phone: validatedData.phone,
+        email: validatedData.email,
+        address: validatedData.address,
+        capacity: validatedData.capacity,
+        specialization: validatedData.specialization || null,
+      });
 
-      if (error) {
-        throw error;
+      if (!result.success) {
+        throw new Error(result.error || "Failed to register organization");
       }
 
       toast({
