@@ -7,6 +7,8 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Donate from "./pages/Donate";
 import FindDonors from "./pages/FindDonors";
+import RegisterDonor from "./pages/RegisterDonor";
+import Organizations from "./pages/Organizations";
 import RegisterOrganization from "./pages/RegisterOrganization";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
@@ -28,6 +30,8 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/donate" element={<Donate />} />
           <Route path="/find-donors" element={<FindDonors />} />
+          <Route path="/register-donor" element={<RegisterDonor />} />
+          <Route path="/organizations" element={<Organizations />} />
           <Route path="/register-organization" element={<RegisterOrganization />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
