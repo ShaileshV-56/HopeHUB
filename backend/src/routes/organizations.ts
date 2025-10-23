@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { validateBody } from '../middleware/validate';
+import { authRequired } from '../middleware/auth';
 import { withClient } from '../db/pool';
 
 const registerSchema = z.object({
@@ -26,8 +27,8 @@ const updateSchema = z.object({
 
 export const organizationsRouter = Router();
 
-// POST /api/organizations/register
-organizationsRouter.post('/register', validateBody(registerSchema), async (req, res, next) => {
+// POST /api/organizations/register (auth required)
+organizationsRouter.post('/register', authRequired, validateBody(registerSchema), async (req, res, next) => {
   try {
     const body = (req as any).validatedBody as z.infer<typeof registerSchema>;
     const { rows } = await withClient((client) => client.query(
