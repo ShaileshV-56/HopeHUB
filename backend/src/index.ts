@@ -5,7 +5,6 @@ import morgan from 'morgan';
 import { env } from './config/env';
 import { errorHandler } from './middleware/errorHandler';
 import { healthRouter } from './routes/health';
-import { donorsRouter } from './routes/donors';
 import { foodDonationsRouter } from './routes/foodDonations';
 import { organizationsRouter } from './routes/organizations';
 import { donationRequestsRouter } from './routes/donationRequests';
@@ -20,7 +19,6 @@ app.use(express.json());
 app.use(morgan(env.nodeEnv === 'production' ? 'combined' : 'dev'));
 
 app.use('/api', healthRouter);
-app.use('/api/donors', donorsRouter);
 app.use('/api/donations/food', foodDonationsRouter);
 app.use('/api/organizations', organizationsRouter);
 app.use('/api/donation-requests', donationRequestsRouter);

@@ -5,36 +5,34 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Heart, ArrowLeft, User, Droplet, MapPin, Phone, Mail, Calendar } from "lucide-react";
+import { Heart, ArrowLeft, Package, MapPin, Phone, Mail, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
-import { bloodDonorApi } from "@/services/api";
+import { foodDonationApi } from "@/services/api";
 
-const donorSchema = z.object({
-  fullName: z.string().trim().min(1, "Full name is required").max(100),
-  email: z.string().trim().email("Invalid email address").max(255),
+const donationSchema = z.object({
+  organization: z.string().trim().min(1, "Organization/Restaurant name is required").max(100),
+  contactPerson: z.string().trim().min(1, "Contact person is required").max(100),
   phone: z.string().regex(/^\d{10}$/, "Phone number must be exactly 10 digits"),
-  bloodGroup: z.string().trim().min(1, "Blood group is required").max(8),
-  age: z.preprocess((v) => Number(v), z.number().int().min(18, "Min age is 18").max(65, "Max age is 65")),
-  address: z.string().trim().min(1, "Address is required").max(500),
-  city: z.string().trim().min(1, "City is required").max(100),
-  state: z.string().trim().min(1, "State is required").max(100),
-  lastDonationDate: z.string().optional().or(z.literal("")),
-  medicalConditions: z.string().optional(),
+  email: z.string().trim().email("Invalid email address").max(255).optional().or(z.literal("")),
+  foodType: z.string().min(1, "Food type is required"),
+  quantity: z.string().trim().min(1, "Quantity is required").max(100),
+  location: z.string().trim().min(1, "Pickup location is required").max(500),
+  availableUntil: z.string().min(1, "Available until is required"),
+  description: z.string().max(1000).optional(),
 });
 
 const RegisterDonor = () => {
   const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
+    organization: "",
+    contactPerson: "",
     phone: "",
-    bloodGroup: "",
-    age: "",
-    address: "",
-    city: "",
-    state: "",
-    lastDonationDate: "",
-    medicalConditions: "",
+    email: "",
+    foodType: "",
+    quantity: "",
+    location: "",
+    availableUntil: "",
+    description: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,19 +45,18 @@ const RegisterDonor = () => {
     setIsSubmitting(true);
 
     try {
-      const validated = donorSchema.parse(formData);
+      const validated = donationSchema.parse(formData);
 
-      const result = await bloodDonorApi.register({
-        fullName: validated.fullName,
-        email: validated.email,
+      const result = await foodDonationApi.submit({
+        organization: validated.organization,
+        contactPerson: validated.contactPerson,
         phone: validated.phone,
-        bloodGroup: validated.bloodGroup,
-        age: validated.age,
-        address: validated.address,
-        city: validated.city,
-        state: validated.state,
-        lastDonationDate: validated.lastDonationDate || null,
-        medicalConditions: validated.medicalConditions || null,
+        email: validated.email || null,
+        foodType: validated.foodType,
+        quantity: validated.quantity,
+        location: validated.location,
+        description: validated.description || null,
+        availableUntil: validated.availableUntil,
       });
 
       if (!result.success) {
@@ -68,20 +65,19 @@ const RegisterDonor = () => {
 
       toast({
         title: "Success!",
-        description: "Donor registered successfully.",
+        description: "Food donation registered successfully.",
       });
 
       setFormData({
-        fullName: "",
-        email: "",
+        organization: "",
+        contactPerson: "",
         phone: "",
-        bloodGroup: "",
-        age: "",
-        address: "",
-        city: "",
-        state: "",
-        lastDonationDate: "",
-        medicalConditions: "",
+        email: "",
+        foodType: "",
+        quantity: "",
+        location: "",
+        availableUntil: "",
+        description: "",
       });
 
       setTimeout(() => navigate("/find-donors"), 1200);
@@ -127,24 +123,38 @@ const RegisterDonor = () => {
             <CardHeader className="text-center">
               <div className="flex justify-center mb-4">
                 <div className="p-3 bg-gradient-primary rounded-lg">
-                  <Droplet className="h-8 w-8 text-white" />
+                  <Package className="h-8 w-8 text-white" />
                 </div>
               </div>
-              <CardTitle className="text-2xl">Register Blood Donor</CardTitle>
-              <CardDescription>Join our donor network and help save lives</CardDescription>
+              <CardTitle className="text-2xl">Register Food Donation</CardTitle>
+              <CardDescription>Share surplus food with those in need</CardDescription>
             </CardHeader>
 
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="fullName">Full Name *</Label>
-                    <Input id="fullName" placeholder="Enter full name" value={formData.fullName} onChange={(e) => handleInputChange("fullName", e.target.value)} className={errors.fullName ? "border-red-500" : ""} />
-                    {errors.fullName && <p className="text-sm text-red-500">{errors.fullName}</p>}
+                    <Label htmlFor="organization">Organization/Restaurant Name *</Label>
+                    <Input id="organization" placeholder="Enter your organization name" value={formData.organization} onChange={(e) => handleInputChange("organization", e.target.value)} className={errors.organization ? "border-red-500" : ""} />
+                    {errors.organization && <p className="text-sm text-red-500">{errors.organization}</p>}
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email *</Label>
+                    <Label htmlFor="contactPerson">Contact Person *</Label>
+                    <Input id="contactPerson" placeholder="Full name" value={formData.contactPerson} onChange={(e) => handleInputChange("contactPerson", e.target.value)} className={errors.contactPerson ? "border-red-500" : ""} />
+                    {errors.contactPerson && <p className="text-sm text-red-500">{errors.contactPerson}</p>}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Contact Phone *</Label>
+                    <Input id="phone" type="tel" placeholder="10 digit phone number" value={formData.phone} onChange={(e) => handleInputChange("phone", e.target.value.replace(/\D/g, "").slice(0, 10))} className={errors.phone ? "border-red-500" : ""} maxLength={10} />
+                    {errors.phone && <p className="text-sm text-red-500">{errors.phone}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Contact Email (optional)</Label>
                     <Input id="email" type="email" placeholder="your.email@example.com" value={formData.email} onChange={(e) => handleInputChange("email", e.target.value)} className={errors.email ? "border-red-500" : ""} />
                     {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
                   </div>
@@ -152,54 +162,35 @@ const RegisterDonor = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Phone *</Label>
-                    <Input id="phone" type="tel" placeholder="10 digit phone number" value={formData.phone} onChange={(e) => handleInputChange("phone", e.target.value.replace(/\D/g, "").slice(0, 10))} className={errors.phone ? "border-red-500" : ""} maxLength={10} />
-                    {errors.phone && <p className="text-sm text-red-500">{errors.phone}</p>}
+                    <Label htmlFor="foodType">Food Type *</Label>
+                    <Input id="foodType" placeholder="e.g., Prepared meals, Fresh produce" value={formData.foodType} onChange={(e) => handleInputChange("foodType", e.target.value)} className={errors.foodType ? "border-red-500" : ""} />
+                    {errors.foodType && <p className="text-sm text-red-500">{errors.foodType}</p>}
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="bloodGroup">Blood Group *</Label>
-                    <Input id="bloodGroup" placeholder="e.g., A+, O-, B+" value={formData.bloodGroup} onChange={(e) => handleInputChange("bloodGroup", e.target.value)} className={errors.bloodGroup ? "border-red-500" : ""} />
-                    {errors.bloodGroup && <p className="text-sm text-red-500">{errors.bloodGroup}</p>}
+                    <Label htmlFor="quantity">Quantity/Servings *</Label>
+                    <Input id="quantity" placeholder="e.g., 50 servings, 10kg" value={formData.quantity} onChange={(e) => handleInputChange("quantity", e.target.value)} className={errors.quantity ? "border-red-500" : ""} />
+                    {errors.quantity && <p className="text-sm text-red-500">{errors.quantity}</p>}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="age">Age *</Label>
-                    <Input id="age" type="number" placeholder="18 - 65" value={formData.age} onChange={(e) => handleInputChange("age", e.target.value)} className={errors.age ? "border-red-500" : ""} min="18" max="65" />
-                    {errors.age && <p className="text-sm text-red-500">{errors.age}</p>}
+                    <Label htmlFor="location">Pickup Location *</Label>
+                    <Input id="location" placeholder="Address or area" value={formData.location} onChange={(e) => handleInputChange("location", e.target.value)} className={errors.location ? "border-red-500" : ""} />
+                    {errors.location && <p className="text-sm text-red-500">{errors.location}</p>}
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="lastDonationDate">Last Donation Date (optional)</Label>
-                    <Input id="lastDonationDate" type="date" value={formData.lastDonationDate} onChange={(e) => handleInputChange("lastDonationDate", e.target.value)} />
+                    <Label htmlFor="availableUntil">Available Until *</Label>
+                    <Input id="availableUntil" type="datetime-local" value={formData.availableUntil} onChange={(e) => handleInputChange("availableUntil", e.target.value)} className={errors.availableUntil ? "border-red-500" : ""} min={new Date().toISOString().slice(0, 16)} />
+                    {errors.availableUntil && <p className="text-sm text-red-500">{errors.availableUntil}</p>}
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="address">Address *</Label>
-                  <Input id="address" placeholder="Street address" value={formData.address} onChange={(e) => handleInputChange("address", e.target.value)} className={errors.address ? "border-red-500" : ""} />
-                  {errors.address && <p className="text-sm text-red-500">{errors.address}</p>}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="city">City *</Label>
-                    <Input id="city" placeholder="City" value={formData.city} onChange={(e) => handleInputChange("city", e.target.value)} className={errors.city ? "border-red-500" : ""} />
-                    {errors.city && <p className="text-sm text-red-500">{errors.city}</p>}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="state">State *</Label>
-                    <Input id="state" placeholder="State" value={formData.state} onChange={(e) => handleInputChange("state", e.target.value)} className={errors.state ? "border-red-500" : ""} />
-                    {errors.state && <p className="text-sm text-red-500">{errors.state}</p>}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="medicalConditions">Medical Conditions (optional)</Label>
-                  <Textarea id="medicalConditions" placeholder="Any relevant medical conditions" value={formData.medicalConditions} onChange={(e) => handleInputChange("medicalConditions", e.target.value)} rows={3} />
+                  <Label htmlFor="description">Additional Details (optional)</Label>
+                  <Textarea id="description" placeholder="Any special instructions or additional information" value={formData.description} onChange={(e) => handleInputChange("description", e.target.value)} rows={3} />
                 </div>
 
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
@@ -207,30 +198,8 @@ const RegisterDonor = () => {
                 </Button>
               </form>
 
-              <div className="mt-8 pt-6 border-t">
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  <div>
-                    <div className="flex justify-center mb-2">
-                      <User className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="text-sm font-medium">Growing</div>
-                    <div className="text-xs text-muted-foreground">Donor Community</div>
-                  </div>
-                  <div>
-                    <div className="flex justify-center mb-2">
-                      <Droplet className="h-5 w-5 text-success" />
-                    </div>
-                    <div className="text-sm font-medium">Every Type</div>
-                    <div className="text-xs text-muted-foreground">Blood Groups</div>
-                  </div>
-                  <div>
-                    <div className="flex justify-center mb-2">
-                      <Calendar className="h-5 w-5 text-warning" />
-                    </div>
-                    <div className="text-sm font-medium">Quick</div>
-                    <div className="text-xs text-muted-foreground">Response Time</div>
-                  </div>
-                </div>
+              <div className="mt-8 pt-6 border-t text-center text-sm text-muted-foreground">
+                Thank you for helping reduce food waste and feed the community.
               </div>
             </CardContent>
           </Card>

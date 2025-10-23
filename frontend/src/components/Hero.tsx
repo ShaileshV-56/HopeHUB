@@ -42,7 +42,7 @@ const Hero = () => {
             <div className="flex flex-col sm:flex-row gap-4 mb-12">
               <Link to="/donate">
                 <Button size="lg" className="bg-white text-primary hover:bg-white/90">
-                  Offer Emergency Aid
+                  Donate Food
                 </Button>
               </Link>
               <Link to="/find-donors">
@@ -51,7 +51,7 @@ const Hero = () => {
                   variant="outline"
                   className="border-white/30 text-white hover:bg-white/10"
                 >
-                  Request Help
+                  Find Food
                 </Button>
               </Link>
             </div>
@@ -89,7 +89,7 @@ const Hero = () => {
                 </p>
                 <Link to="/donate">
                   <Button className="w-full mt-4" variant="outline">
-                    Register as Helper
+                    Register Food Donation
                   </Button>
                 </Link>
               </Card>
@@ -110,7 +110,7 @@ const Hero = () => {
                 </p>
                 <Link to="/find-donors">
                   <Button className="w-full mt-4" variant="outline">
-                    Registered Organization
+                    Registered Organizations
                   </Button>
                 </Link>
               </Card>

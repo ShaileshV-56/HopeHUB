@@ -23,13 +23,7 @@ export const ENDPOINTS = {
     ME: '/auth/me',
   },
   
-  // Blood Donors
-  DONORS: {
-    REGISTER: '/donors/register',
-    GET_ALL: '/donors',
-    GET_BY_ID: (id: string) => `/donors/${id}`,
-    UPDATE: (id: string) => `/donors/${id}`,
-  },
+  // Blood donors removed
   
   // Food Donations
   FOOD_DONATIONS: {

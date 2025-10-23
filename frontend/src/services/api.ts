@@ -7,35 +7,7 @@ const BASE_URL = API_URL; // Centralized backend URL
 
 const apiCall = createApiClient(BASE_URL);
 
-// Blood Donor APIs
-export const bloodDonorApi = {
-  register: async (donorData: any) => {
-    return apiCall('/donors/register', {
-      method: 'POST',
-      body: JSON.stringify(donorData),
-    });
-  },
-
-  getAll: async (filters?: any) => {
-    const queryParams = filters ? `?${new URLSearchParams(filters)}` : '';
-    return apiCall(`/donors${queryParams}`, {
-      method: 'GET',
-    });
-  },
-
-  getById: async (id: string) => {
-    return apiCall(`/donors/${id}`, {
-      method: 'GET',
-    });
-  },
-
-  update: async (id: string, donorData: any) => {
-    return apiCall(`/donors/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(donorData),
-    });
-  },
-};
+// Removed blood donor APIs
 
 // Food Donation APIs
 export const foodDonationApi = {

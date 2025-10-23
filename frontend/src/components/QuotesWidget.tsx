@@ -9,7 +9,7 @@ interface QuoteData {
 }
 
 const QuotesWidget = () => {
-  const [quote, setQuote] = useState<QuoteData | null>(null);
+  const [quoteIndex, setQuoteIndex] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const inspirationalQuotes = [
@@ -55,21 +55,19 @@ const QuotesWidget = () => {
     }
   ];
 
-  const getRandomQuote = () => {
-    const randomIndex = Math.floor(Math.random() * inspirationalQuotes.length);
-    return inspirationalQuotes[randomIndex];
-  };
-
   const fetchNewQuote = async () => {
     setLoading(true);
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    setQuote(getRandomQuote());
+    await new Promise(resolve => setTimeout(resolve, 200));
+    setQuoteIndex((prev) => (prev + 1) % inspirationalQuotes.length);
     setLoading(false);
   };
 
   useEffect(() => {
-    fetchNewQuote();
+    setLoading(false);
+    const id = setInterval(() => {
+      setQuoteIndex((prev) => (prev + 1) % inspirationalQuotes.length);
+    }, 5000);
+    return () => clearInterval(id);
   }, []);
 
   if (loading) {
@@ -86,9 +84,7 @@ const QuotesWidget = () => {
     );
   }
 
-  if (!quote) {
-    return null;
-  }
+  const quote = inspirationalQuotes[quoteIndex];
 
   return (
     <Card className="bg-gradient-card shadow-soft hover:shadow-medium transition-smooth">

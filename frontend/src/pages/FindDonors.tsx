@@ -4,22 +4,21 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Heart, ArrowLeft, MapPin, Phone, Mail, User, Calendar, Droplet, Filter } from "lucide-react";
-import { bloodDonorApi } from "@/services/api";
+import { Heart, ArrowLeft, MapPin, Phone, Mail, Calendar, Filter, Package } from "lucide-react";
+import { foodDonationApi } from "@/services/api";
 
-interface Donor {
+interface FoodDonation {
   id: string;
-  full_name: string;
-  email: string;
+  organization: string;
+  contact_person: string;
   phone: string;
-  blood_group: string;
-  age: number;
-  address: string;
-  city: string;
-  state: string;
-  available: boolean;
-  last_donation_date: string | null;
-  medical_conditions: string | null;
+  email: string | null;
+  food_type: string;
+  quantity: string;
+  location: string;
+  description: string | null;
+  available_until: string;
+  status: string;
   created_at: string;
 }
 
@@ -34,43 +33,40 @@ const formatDate = (iso: string | null) => {
 };
 
 const FindDonors = () => {
-  const [donors, setDonors] = useState<Donor[]>([]);
+  const [donations, setDonations] = useState<FoodDonation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
-  const [bloodGroup, setBloodGroup] = useState("");
   const [availableOnly, setAvailableOnly] = useState(false);
 
   useEffect(() => {
-    const fetchDonors = async () => {
+    const fetchDonations = async () => {
       setLoading(true);
       setError(null);
-      const res = await bloodDonorApi.getAll();
+      const res = await foodDonationApi.getAll();
       if (!res.success) {
-        setError(res.error || "Failed to load donors");
+        setError(res.error || "Failed to load food donations");
         setLoading(false);
         return;
       }
-      setDonors((res.data || []) as Donor[]);
+      setDonations((res.data || []) as FoodDonation[]);
       setLoading(false);
     };
-    fetchDonors();
+    fetchDonations();
   }, []);
 
-  const filteredDonors = useMemo(() => {
+  const filteredDonations = useMemo(() => {
     const q = query.toLowerCase();
-    return donors.filter((d) => {
+    return donations.filter((d) => {
       const matchesQuery =
-        d.full_name.toLowerCase().includes(q) ||
-        d.city.toLowerCase().includes(q) ||
-        d.state.toLowerCase().includes(q) ||
-        d.address.toLowerCase().includes(q) ||
-        d.blood_group.toLowerCase().includes(q);
-      const matchesGroup = bloodGroup ? d.blood_group.toLowerCase() === bloodGroup.toLowerCase() : true;
-      const matchesAvailable = availableOnly ? d.available === true : true;
-      return matchesQuery && matchesGroup && matchesAvailable;
+        d.organization.toLowerCase().includes(q) ||
+        d.location.toLowerCase().includes(q) ||
+        d.food_type.toLowerCase().includes(q) ||
+        (d.description || '').toLowerCase().includes(q);
+      const matchesAvailable = availableOnly ? d.status === 'available' : true;
+      return matchesQuery && matchesAvailable;
     });
-  }, [donors, query, bloodGroup, availableOnly]);
+  }, [donations, query, availableOnly]);
 
   return (
     <div className="min-h-screen bg-gradient-hero">
@@ -90,8 +86,8 @@ const FindDonors = () => {
         </div>
 
         <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">Find Blood Donors</h1>
-          <p className="text-white/90 text-lg max-w-2xl mx-auto">Search registered blood donors by location, blood group, and availability.</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">Find Food Donations</h1>
+          <p className="text-white/90 text-lg max-w-2xl mx-auto">Search available food donations by location, type, and availability.</p>
         </div>
 
         <div className="max-w-4xl mx-auto mb-8">
@@ -99,9 +95,8 @@ const FindDonors = () => {
             <CardContent className="p-6">
               <div className="flex flex-col md:flex-row gap-4">
                 <div className="flex-1 relative">
-                  <Input placeholder="Search by name, city, state, or address..." value={query} onChange={(e) => setQuery(e.target.value)} />
+                  <Input placeholder="Search by org, location, type..." value={query} onChange={(e) => setQuery(e.target.value)} />
                 </div>
-                <Input placeholder="Blood group (e.g., A+, O-)" value={bloodGroup} onChange={(e) => setBloodGroup(e.target.value)} className="md:w-48" />
                 <Button variant={availableOnly ? "default" : "outline"} onClick={() => setAvailableOnly((v) => !v)} className="md:w-48">
                   <Filter className="h-4 w-4 mr-2" />
                   {availableOnly ? "Showing Available" : "Available Only"}
@@ -125,15 +120,15 @@ const FindDonors = () => {
 
           {!loading && !error && (
             <div className="grid gap-6">
-              {filteredDonors.map((donor) => (
-                <Card key={donor.id} className="bg-white/95 backdrop-blur-sm shadow-large hover:shadow-green transition-smooth">
+              {filteredDonations.map((item) => (
+                <Card key={item.id} className="bg-white/95 backdrop-blur-sm shadow-large hover:shadow-green transition-smooth">
                   <CardContent className="p-6">
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-xl font-semibold">{donor.full_name}</h3>
-                          <Badge variant="secondary"><Droplet className="h-3 w-3 mr-1" /> {donor.blood_group}</Badge>
-                          {donor.available && (
+                          <h3 className="text-xl font-semibold">{item.organization}</h3>
+                          <Badge variant="secondary">{item.food_type}</Badge>
+                          {item.status === 'available' && (
                             <Badge className="bg-success text-white">Available</Badge>
                           )}
                         </div>
@@ -141,33 +136,33 @@ const FindDonors = () => {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 text-sm text-muted-foreground">
                           <div className="flex items-center gap-2">
                             <MapPin className="h-4 w-4" />
-                            <span>{donor.city}, {donor.state}</span>
+                            <span>{item.location}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4" />
-                            <span>Last donation: {formatDate(donor.last_donation_date)}</span>
+                            <span>Available until: {formatDate(item.available_until)}</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <User className="h-4 w-4" />
-                            <span>Age: {donor.age}</span>
+                            <Package className="h-4 w-4" />
+                            <span>Qty: {item.quantity}</span>
                           </div>
                         </div>
 
                         <div className="flex items-center gap-4 text-sm">
                           <div className="flex items-center gap-2">
                             <Phone className="h-4 w-4" />
-                            <a href={`tel:${donor.phone}`} className="hover:underline">{donor.phone}</a>
+                            <a href={`tel:${item.phone}`} className="hover:underline">{item.phone}</a>
                           </div>
                           <div className="flex items-center gap-2">
                             <Mail className="h-4 w-4" />
-                            <a href={`mailto:${donor.email}`} className="hover:underline">{donor.email}</a>
+                            {item.email && <a href={`mailto:${item.email}`} className="hover:underline">{item.email}</a>}
                           </div>
                         </div>
 
-                        {donor.medical_conditions && (
+                        {item.description && (
                           <div className="mt-4 text-sm">
-                            <span className="font-medium">Medical Conditions:</span>
-                            <p className="text-muted-foreground mt-1">{donor.medical_conditions}</p>
+                            <span className="font-medium">Details:</span>
+                            <p className="text-muted-foreground mt-1">{item.description}</p>
                           </div>
                         )}
                       </div>
@@ -176,9 +171,9 @@ const FindDonors = () => {
                 </Card>
               ))}
 
-              {filteredDonors.length === 0 && (
+              {filteredDonations.length === 0 && (
                 <Card className="bg-white/95 backdrop-blur-sm text-center p-8">
-                  <div className="text-muted-foreground">No donors found. Try adjusting your search.</div>
+                  <div className="text-muted-foreground">No food donations found. Try adjusting your search.</div>
                 </Card>
               )}
             </div>

@@ -7,8 +7,8 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navItems = [
-    { name: "Find Donors", href: "/find-donors", icon: MapPin },
-    { name: "Register Donor", href: "/register-donor", icon: Heart },
+    { name: "Find Food", href: "/find-donors", icon: MapPin },
+    { name: "Donate Food", href: "/donate", icon: Heart },
     { name: "Organizations", href: "/organizations", icon: Users },
     { name: "Register Organization", href: "/register-organization", icon: Users },
   ];
@@ -24,7 +24,7 @@ const Header = () => {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white">HopeHUB</h1>
-              <p className="text-white/80 text-xs">Emergency Aid Platform</p>
+              <p className="text-white/80 text-xs">Food & Shelter Aid Platform</p>
             </div>
           </Link>
 
@@ -46,7 +46,7 @@ const Header = () => {
           <div className="hidden md:flex items-center space-x-4">
             <Link to="/auth">
               <Button variant="secondary" size="sm">
-                Sign In
+                Sign In / Sign Up
               </Button>
             </Link>
             <Link to="/donate">

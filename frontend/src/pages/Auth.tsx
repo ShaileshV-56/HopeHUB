@@ -94,6 +94,13 @@ const Auth = () => {
           return;
         }
 
+        try {
+          const token = (result.data as any)?.token;
+          if (token && typeof localStorage !== 'undefined') {
+            localStorage.setItem('auth_token', token);
+          }
+        } catch {}
+
         toast({
           title: "Welcome back!",
           description: "You have been signed in successfully.",

@@ -11,10 +11,17 @@ export function createApiClient(baseUrl: string) {
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
     try {
+      // Inject auth token if present
+      let authHeaders: Record<string, string> = {};
+      try {
+        const token = typeof localStorage !== 'undefined' ? localStorage.getItem('auth_token') : null;
+        if (token) authHeaders['Authorization'] = `Bearer ${token}`;
+      } catch {}
       const response = await fetch(`${baseUrl}${endpoint}`, {
         ...options,
         headers: {
           'Content-Type': 'application/json',
+          ...authHeaders,
           ...(options.headers || {}),
         },
       });

@@ -116,17 +116,7 @@ export const API_ENDPOINTS = {
     },
   },
 
-  // Blood Donation & Emergency Services (Custom)
-  emergency: {
-    bloodBank: {
-      endpoint: 'https://api.example.com/blood-banks',
-      description: 'Blood bank API integration',
-    },
-    emergencyServices: {
-      endpoint: 'https://api.example.com/emergency',
-      description: 'Emergency services API',
-    },
-  },
+  // Emergency section trimmed; blood integrations removed
 };
 
 // ============================================
