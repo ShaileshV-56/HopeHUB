@@ -10,6 +10,7 @@ import { foodDonationsRouter } from './routes/foodDonations';
 import { organizationsRouter } from './routes/organizations';
 import { donationRequestsRouter } from './routes/donationRequests';
 import { authRouter } from './routes/auth';
+import { statsRouter } from './routes/stats';
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use('/api/donations/food', foodDonationsRouter);
 app.use('/api/organizations', organizationsRouter);
 app.use('/api/donation-requests', donationRequestsRouter);
 app.use('/api/auth', authRouter);
+app.use('/api/stats', statsRouter);
 
 app.use(errorHandler);
 

@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import { sign, verify } from 'jsonwebtoken';
+import type { Secret, SignOptions, JwtPayload } from 'jsonwebtoken';
 import { withClient } from '../db/pool';
 import { env } from '../config/env';
 import { validateBody } from '../middleware/validate';
@@ -53,7 +54,11 @@ authRouter.post('/signin', validateBody(signinSchema), async (req, res, next) =>
     const ok = await bcrypt.compare(body.password, user.password_hash);
     if (!ok) return res.status(401).json({ success: false, message: 'Invalid credentials' });
 
-    const token = jwt.sign({ sub: user.id, email: user.email }, env.jwtSecret, { expiresIn: env.jwtExpiresIn });
+    const token = sign(
+      { sub: user.id, email: user.email },
+      env.jwtSecret as Secret,
+      { expiresIn: env.jwtExpiresIn as SignOptions['expiresIn'] }
+    );
     res.json({ success: true, data: { token, user: { id: user.id, name: user.name, email: user.email } } });
   } catch (err) {
     next(err);
@@ -66,8 +71,9 @@ authRouter.get('/me', (req, res) => {
   const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
   if (!token) return res.status(401).json({ success: false, message: 'Missing token' });
   try {
-    const payload = jwt.verify(token, env.jwtSecret) as any;
-    res.json({ success: true, data: { id: payload.sub, email: payload.email } });
+    const payload = verify(token, env.jwtSecret as Secret) as JwtPayload | string;
+    if (typeof payload === 'string') return res.status(401).json({ success: false, message: 'Invalid token' });
+    res.json({ success: true, data: { id: payload.sub, email: (payload as any).email } });
   } catch {
     res.status(401).json({ success: false, message: 'Invalid token' });
   }

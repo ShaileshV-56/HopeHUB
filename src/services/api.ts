@@ -1,7 +1,8 @@
 // API service for backend communication
 // Update the BASE_URL to point to your Node.js/Express backend
 
-const BASE_URL = 'http://localhost:5000/api'; // Change this to your backend URL
+import { API_URL } from '@/config/backend';
+const BASE_URL = API_URL; // Centralized backend URL
 
 interface ApiResponse<T = any> {
   success: boolean;
@@ -204,3 +205,12 @@ export const authApi = {
 
 // Export BASE_URL for configuration
 export { BASE_URL };
+
+// Dashboard APIs
+export const dashboardApi = {
+  getStats: async () => {
+    return apiCall('/stats', {
+      method: 'GET',
+    });
+  },
+};

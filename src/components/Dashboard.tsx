@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Clock, Package, AlertCircle, CheckCircle, Truck } from "lucide-react";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { dashboardApi } from "@/services/api";
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
@@ -21,48 +21,23 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // Get food donations count
-        const { count: donationsCount } = await supabase
-          .from('food_donations')
-          .select('*', { count: 'exact', head: true })
-          .eq('status', 'available');
-
-        // Get helper organizations count
-        const { count: helpersCount } = await supabase
-          .from('helper_organizations')
-          .select('*', { count: 'exact', head: true })
-          .eq('status', 'active');
-
-        // Get total food donations ever created
-        const { count: totalDonationsCount } = await supabase
-          .from('food_donations')
-          .select('*', { count: 'exact', head: true });
-
-        if (donationsCount !== null) {
+        const resp = await dashboardApi.getStats();
+        if (resp.success && resp.data) {
+          const d = resp.data as any;
           setStats(prev => ({
             ...prev,
-            availableDonations: donationsCount,
-            activeVolunteers: helpersCount || 4,
-            partnerOrgs: helpersCount || 8,
-            mealsSaved: totalDonationsCount ? totalDonationsCount * 15 : 182, // Estimate 15 meals per donation
-            totalVisits: Math.floor(Math.random() * 1000) + 500, // Placeholder
-            uniqueVisitors: Math.floor(Math.random() * 300) + 200 // Placeholder
+            availableDonations: d.availableDonations ?? 0,
+            mealsSaved: d.mealsSaved ?? 0,
+            activeVolunteers: d.activeVolunteers ?? 0,
+            partnerOrgs: d.partnerOrgs ?? 0,
+            totalVisits: d.totalVisits ?? 0,
+            uniqueVisitors: d.uniqueVisitors ?? 0,
           }));
-        }
 
-        // Fetch active donations
-        const { data: donations } = await supabase
-          .from('food_donations')
-          .select('*')
-          .eq('status', 'available')
-          .order('created_at', { ascending: false })
-          .limit(10);
-
-        if (donations) {
-          const formattedDonations = donations.map(donation => ({
+          const formattedDonations = (d.donations ?? []).map((donation: any) => ({
             id: donation.id,
             donor: donation.organization,
-            foodType: donation.food_type.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()),
+            foodType: String(donation.food_type || '').replace('-', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()),
             quantity: donation.quantity,
             location: donation.location,
             expiryTime: formatTimeUntil(donation.available_until),
@@ -71,8 +46,6 @@ const Dashboard = () => {
           }));
           setActiveDonations(formattedDonations);
         }
-
-        console.log('Dashboard data fetched successfully');
       } catch (error) {
         console.error('Error fetching dashboard stats:', error);
       }
