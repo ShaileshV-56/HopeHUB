@@ -38,13 +38,14 @@ npm run migrate
 npm run dev
 
 
-Frontend Setup
+### Frontend Setup
 
 cd frontend
 npm install
 npm run dev
 
-📚 Tech Stack
+###📚 Tech Stack
+
 Frontend:
 
 React with TypeScript
@@ -65,7 +66,7 @@ PostgreSQL with pg
 
 Docker & Docker Compose
 
-🔧 API Endpoints
+###🔧 API Endpoints
 GET /api/health - Health check
 
 POST /api/auth/login - User authentication
@@ -81,7 +82,7 @@ POST /api/donation-requests - Donation requests
 GET /api/stats - Dashboard statistics
 
 
-🐳 Docker Deployment
+###🐳 Docker Deployment
 
 # Start all services
 docker-compose up -d
