@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      blood_donors: {
+        Row: {
+          address: string
+          age: number
+          available: boolean
+          blood_group: string
+          city: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          last_donation_date: string | null
+          medical_conditions: string | null
+          phone: string
+          state: string
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          age: number
+          available?: boolean
+          blood_group: string
+          city: string
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          last_donation_date?: string | null
+          medical_conditions?: string | null
+          phone: string
+          state: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          age?: number
+          available?: boolean
+          blood_group?: string
+          city?: string
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          last_donation_date?: string | null
+          medical_conditions?: string | null
+          phone?: string
+          state?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       donation_requests: {
         Row: {
           approved_at: string | null

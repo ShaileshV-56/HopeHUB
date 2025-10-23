@@ -7,9 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Heart, ArrowLeft, Package, MapPin, Clock } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import { foodDonationApi } from "@/services/api";
 
 const donationSchema = z.object({
   organization: z.string().trim().min(1, "Organization name is required").max(100),
@@ -49,25 +49,20 @@ const Donate = () => {
       // Validate form data
       const validatedData = donationSchema.parse(formData);
 
-      const { error } = await supabase
-        .from('food_donations')
-        .insert([
-          {
-            organization: validatedData.organization,
-            contact_person: validatedData.contactPerson,
-            phone: validatedData.phone,
-            food_type: validatedData.foodType,
-            quantity: validatedData.quantity,
-            location: validatedData.location,
-            description: validatedData.description || null,
-            available_until: validatedData.availableUntil,
-            email: validatedData.email || null,
-            status: 'available'
-          }
-        ]);
+      const result = await foodDonationApi.submit({
+        organization: validatedData.organization,
+        contactPerson: validatedData.contactPerson,
+        phone: validatedData.phone,
+        foodType: validatedData.foodType,
+        quantity: validatedData.quantity,
+        location: validatedData.location,
+        description: validatedData.description || null,
+        availableUntil: validatedData.availableUntil,
+        email: validatedData.email || null,
+      });
 
-      if (error) {
-        throw error;
+      if (!result.success) {
+        throw new Error(result.error || "Failed to submit donation");
       }
 
       toast({
