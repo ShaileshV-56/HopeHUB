@@ -9,6 +9,7 @@ import { Heart, ArrowLeft, Package, MapPin, Phone, Mail, Calendar } from "lucide
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { foodDonationApi } from "@/services/api";
+import { API_ENDPOINTS, DEFAULT_CONFIGS } from "@/config/apiConfig";
 
 const donationSchema = z.object({
   organization: z.string().trim().min(1, "Organization/Restaurant name is required").max(100),
@@ -38,6 +39,33 @@ const RegisterDonor = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [coords, setCoords] = useState<{ lat: number; lon: number } | null>(null);
+  const [weather, setWeather] = useState<any>(null);
+
+  const fetchWeather = async (lat: number, lon: number) => {
+    const key = API_ENDPOINTS.weather.openWeatherMap.publicKey;
+    if (!key) return;
+    try {
+      const url = `${API_ENDPOINTS.weather.openWeatherMap.endpoint}/weather?lat=${lat}&lon=${lon}&appid=${key}&units=${DEFAULT_CONFIGS.weather.units}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      setWeather(data);
+    } catch {}
+  };
+
+  const handleUseMyLocation = () => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setCoords({ lat: latitude, lon: longitude });
+        // Best-effort reverse geocode via browser Geolocation; user may still edit address
+        handleInputChange("location", `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`);
+        fetchWeather(latitude, longitude);
+      },
+      () => {}
+    );
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,7 +82,7 @@ const RegisterDonor = () => {
         email: validated.email || null,
         foodType: validated.foodType,
         quantity: validated.quantity,
-        location: validated.location,
+        location: coords ? `${coords.lat},${coords.lon}` : validated.location,
         description: validated.description || null,
         availableUntil: validated.availableUntil,
       });
@@ -179,6 +207,37 @@ const RegisterDonor = () => {
                     <Label htmlFor="location">Pickup Location *</Label>
                     <Input id="location" placeholder="Address or area" value={formData.location} onChange={(e) => handleInputChange("location", e.target.value)} className={errors.location ? "border-red-500" : ""} />
                     {errors.location && <p className="text-sm text-red-500">{errors.location}</p>}
+                <div className="flex gap-2 items-center">
+                  <Button type="button" variant="outline" onClick={handleUseMyLocation}>Use My Location</Button>
+                  {coords && (
+                    <a
+                      className="text-sm underline text-primary self-center"
+                      target="_blank"
+                      rel="noreferrer"
+                      href={`https://www.google.com/maps?q=${coords.lat},${coords.lon}`}
+                    >
+                      View on Map
+                    </a>
+                  )}
+                  {coords && (
+                    <span className="text-xs text-muted-foreground">{coords.lat.toFixed(4)}, {coords.lon.toFixed(4)}</span>
+                  )}
+                </div>
+                {coords && (
+                  <div className="mt-2">
+                    <iframe
+                      title="Selected Location"
+                      className="w-full h-48 rounded"
+                      src={`https://www.google.com/maps?q=${coords.lat},${coords.lon}&z=15&output=embed`}
+                      loading="lazy"
+                    />
+                  </div>
+                )}
+                {weather && (
+                  <div className="text-xs text-muted-foreground mt-2">
+                    Weather: {(weather.weather?.[0]?.description || '').toString()} | Temp: {Math.round(weather.main?.temp)}°{DEFAULT_CONFIGS.weather.units === 'metric' ? 'C' : 'F'} | Humidity: {weather.main?.humidity}%
+                  </div>
+                )}
                   </div>
 
                   <div className="space-y-2">

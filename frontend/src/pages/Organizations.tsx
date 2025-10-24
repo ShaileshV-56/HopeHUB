@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { helperOrgApi } from "@/services/api";
+import { helperOrgApi, authApi } from "@/services/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,7 @@ interface Organization {
   specialization: string | null;
   status: string;
   created_at: string;
+  user_id?: string | null;
 }
 
 const Organizations = () => {
@@ -25,12 +26,21 @@ const Organizations = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       setError(null);
-      const res = await helperOrgApi.getAll();
+      const [me, res] = await Promise.all([
+        authApi.getCurrentUser().catch(() => ({ success: false } as any)),
+        helperOrgApi.getAll(),
+      ]);
+      if (me.success && (me.data as any)?.id) {
+        setCurrentUserId((me.data as any).id);
+      } else {
+        setCurrentUserId(null);
+      }
       if (!res.success) {
         setError(res.error || "Failed to load organizations");
         setLoading(false);
@@ -41,6 +51,17 @@ const Organizations = () => {
     };
     fetchData();
   }, []);
+
+  const handleDelete = async (id: string) => {
+    const ok = confirm('Are you sure you want to delete this organization?');
+    if (!ok) return;
+    const res = await helperOrgApi.remove(id);
+    if (!res.success) {
+      alert(res.error || 'Failed to delete');
+      return;
+    }
+    setOrgs(prev => prev.filter(o => o.id !== id));
+  };
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase();
@@ -141,6 +162,11 @@ const Organizations = () => {
                           </div>
                         </div>
                       </div>
+                      {currentUserId && org.user_id === currentUserId && (
+                        <div className="flex-shrink-0">
+                          <Button variant="destructive" onClick={() => handleDelete(org.id)}>Delete</Button>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>

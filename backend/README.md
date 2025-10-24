@@ -33,8 +33,13 @@ npm run dev
 ## Endpoints
 - Auth: `POST /auth/signup`, `POST /auth/signin`, `POST /auth/signout`, `GET /auth/me`
 - Donors: `POST /donors/register`, `GET /donors`, `GET /donors/:id`, `PUT /donors/:id`
-- Food Donations: `POST /donations/food`, `GET /donations/food`, `GET /donations/food/:id`, `PUT /donations/food/:id`, `PATCH /donations/food/:id/status`
-- Organizations: `POST /organizations/register`, `GET /organizations`, `GET /organizations/:id`, `PUT /organizations/:id`
+- Food Donations: `POST /donations/food`, `GET /donations/food`, `GET /donations/food/:id`, `PUT /donations/food/:id`, `PATCH /donations/food/:id/status`, `DELETE /donations/food/:id` (owner only)
+- Organizations: `POST /organizations/register`, `GET /organizations`, `GET /organizations/:id`, `PUT /organizations/:id`, `DELETE /organizations/:id` (owner only)
 - Donation Requests: `POST /donation-requests`, `GET /donation-requests`, `GET /donation-requests/:id`, `PATCH /donation-requests/:id/status`
 
 All endpoints return `{ success, data?, message? }` as expected by the frontend.
+
+### Ownership
+- Migrations add `user_id` to `food_donations` and `helper_organizations`.
+- Create endpoints require auth and set `user_id` from JWT.
+- Delete endpoints require auth and delete only when `user_id` matches the caller.
