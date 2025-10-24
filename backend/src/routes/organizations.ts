@@ -31,10 +31,11 @@ export const organizationsRouter = Router();
 organizationsRouter.post('/register', requireAuth, validateBody(registerSchema), async (req, res, next) => {
   try {
     const body = (req as any).validatedBody as z.infer<typeof registerSchema>;
+    const userId = (req as any).user?.id as string;
     const { rows } = await withClient((client) => client.query(
       `INSERT INTO helper_organizations (
-        organization_name, contact_person, phone, email, address, capacity, specialization, status
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,'active') RETURNING *`,
+        organization_name, contact_person, phone, email, address, capacity, specialization, status, user_id
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,'active',$8) RETURNING *`,
       [
         body.organizationName,
         body.contactPerson,
@@ -43,6 +44,7 @@ organizationsRouter.post('/register', requireAuth, validateBody(registerSchema),
         body.address,
         body.capacity ?? null,
         body.specialization ?? null,
+        userId,
       ]
     ));
     res.status(201).json({ success: true, data: rows[0] });
@@ -68,6 +70,23 @@ organizationsRouter.get('/:id', async (req, res, next) => {
     const { rows } = await withClient((client) => client.query('SELECT * FROM helper_organizations WHERE id = $1', [id]));
     if (!rows[0]) return res.status(404).json({ success: false, message: 'Organization not found' });
     res.json({ success: true, data: rows[0] });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// DELETE /api/organizations/:id (only owner)
+organizationsRouter.delete('/:id', requireAuth, async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const userId = (req as any).user?.id as string;
+    const { rowCount } = await withClient((client) =>
+      client.query('DELETE FROM helper_organizations WHERE id = $1 AND user_id = $2', [id, userId])
+    );
+    if (rowCount === 0) {
+      return res.status(404).json({ success: false, message: 'Organization not found' });
+    }
+    return res.json({ success: true, message: 'Organization deleted' });
   } catch (err) {
     next(err);
   }

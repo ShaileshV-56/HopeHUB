@@ -9,6 +9,8 @@ import { Heart, ArrowLeft, Building2, MapPin, Phone } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { helperOrgApi } from "@/services/api";
+import { API_ENDPOINTS, DEFAULT_CONFIGS } from "@/config/apiConfig";
+import LocationWeather from "@/components/LocationWeather";
 
 const organizationSchema = z.object({
   organizationName: z.string().trim().min(1, "Organization name is required").max(100),
@@ -34,6 +36,32 @@ const RegisterOrganization = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [coords, setCoords] = useState<{ lat: number; lon: number } | null>(null);
+  const [weather, setWeather] = useState<any>(null);
+
+  const fetchWeather = async (lat: number, lon: number) => {
+    const key = API_ENDPOINTS.weather.openWeatherMap.publicKey;
+    if (!key) return;
+    try {
+      const url = `${API_ENDPOINTS.weather.openWeatherMap.endpoint}/weather?lat=${lat}&lon=${lon}&appid=${key}&units=${DEFAULT_CONFIGS.weather.units}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      setWeather(data);
+    } catch {}
+  };
+
+  const handleUseMyLocation = () => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setCoords({ lat: latitude, lon: longitude });
+        setFormData(prev => ({ ...prev, address: `${latitude.toFixed(5)}, ${longitude.toFixed(5)}` }));
+        fetchWeather(latitude, longitude);
+      },
+      () => {}
+    );
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,7 +80,7 @@ const RegisterOrganization = () => {
         contactPerson: validatedData.contactPerson,
         phone: validatedData.phone,
         email: validatedData.email,
-        address: validatedData.address,
+        address: coords ? `${coords.lat},${coords.lon}` : validatedData.address,
         capacity: validatedData.capacity,
         specialization: validatedData.specialization || null,
       });
@@ -224,6 +252,36 @@ const RegisterOrganization = () => {
                   {errors.address && (
                     <p className="text-sm text-red-500">{errors.address}</p>
                   )}
+                <div className="flex gap-2 mt-2 items-center">
+                  <Button type="button" variant="outline" onClick={handleUseMyLocation}>Use My Location</Button>
+                  {coords && (
+                    <a
+                      className="text-sm underline text-primary self-center"
+                      target="_blank"
+                      rel="noreferrer"
+                      href={`https://www.google.com/maps?q=${coords.lat},${coords.lon}`}
+                    >
+                      View on Map
+                    </a>
+                  )}
+                  {coords && (
+                    <span className="text-xs text-muted-foreground">{coords.lat.toFixed(4)}, {coords.lon.toFixed(4)}</span>
+                  )}
+                </div>
+                {coords && (
+                  <div className="mt-2">
+                    <img
+                      className="w-full h-48 object-cover rounded"
+                      alt="Map preview"
+                      src={`${API_ENDPOINTS.maps.mapbox.endpoint}/styles/v1/mapbox/streets-v11/static/pin-s+ff0000(${coords.lon},${coords.lat})/${coords.lon},${coords.lat},13,0/600x300@2x?access_token=${API_ENDPOINTS.maps.mapbox.publicKey}`}
+                    />
+                  </div>
+                )}
+                {weather && (
+                  <div className="text-xs text-muted-foreground mt-2">
+                    Weather: {(weather.weather?.[0]?.description || '').toString()} | Temp: {Math.round(weather.main?.temp)}°{DEFAULT_CONFIGS.weather.units === 'metric' ? 'C' : 'F'}
+                  </div>
+                )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -261,7 +319,8 @@ const RegisterOrganization = () => {
 
               {/* Quick Stats */}
               <div className="mt-8 pt-6 border-t">
-                <div className="grid grid-cols-3 gap-4 text-center">
+                <LocationWeather locationText={formData.address} coords={coords} />
+                <div className="grid grid-cols-3 gap-4 text-center mt-6">
                   <div>
                     <div className="flex justify-center mb-2">
                       <Building2 className="h-5 w-5 text-primary" />

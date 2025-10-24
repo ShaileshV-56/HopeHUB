@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Heart, ArrowLeft, MapPin, Phone, Mail, Calendar, Filter, Package } from "lucide-react";
-import { foodDonationApi } from "@/services/api";
+import { foodDonationApi, authApi } from "@/services/api";
+import LocationWeather from "@/components/LocationWeather";
 
 interface FoodDonation {
   id: string;
@@ -20,6 +21,7 @@ interface FoodDonation {
   available_until: string;
   status: string;
   created_at: string;
+  user_id?: string | null;
 }
 
 const formatDate = (iso: string | null) => {
@@ -38,12 +40,21 @@ const FindDonors = () => {
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [availableOnly, setAvailableOnly] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchDonations = async () => {
       setLoading(true);
       setError(null);
-      const res = await foodDonationApi.getAll();
+      const [me, res] = await Promise.all([
+        authApi.getCurrentUser().catch(() => ({ success: false } as any)),
+        foodDonationApi.getAll(),
+      ]);
+      if (me.success && (me.data as any)?.id) {
+        setCurrentUserId((me.data as any).id);
+      } else {
+        setCurrentUserId(null);
+      }
       if (!res.success) {
         setError(res.error || "Failed to load food donations");
         setLoading(false);
@@ -54,6 +65,17 @@ const FindDonors = () => {
     };
     fetchDonations();
   }, []);
+
+  const handleDelete = async (id: string) => {
+    const ok = confirm('Delete this donation?');
+    if (!ok) return;
+    const res = await foodDonationApi.remove(id);
+    if (!res.success) {
+      alert(res.error || 'Failed to delete');
+      return;
+    }
+    setDonations(prev => prev.filter(d => d.id !== id));
+  };
 
   const filteredDonations = useMemo(() => {
     const q = query.toLowerCase();
@@ -165,7 +187,15 @@ const FindDonors = () => {
                             <p className="text-muted-foreground mt-1">{item.description}</p>
                           </div>
                         )}
+                        <div className="mt-4">
+                          <LocationWeather locationText={item.location} showMap />
+                        </div>
                       </div>
+                      {currentUserId && item.user_id === currentUserId && (
+                        <div className="flex-shrink-0">
+                          <Button variant="destructive" onClick={() => handleDelete(item.id)}>Delete</Button>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>

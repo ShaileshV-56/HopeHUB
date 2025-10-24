@@ -44,6 +44,12 @@ export const foodDonationApi = {
       body: JSON.stringify({ status }),
     });
   },
+
+  remove: async (id: string) => {
+    return apiCall(`/donations/food/${id}`, {
+      method: 'DELETE',
+    });
+  },
 };
 
 // Helper Organization APIs
@@ -72,6 +78,12 @@ export const helperOrgApi = {
     return apiCall(`/organizations/${id}`, {
       method: 'PUT',
       body: JSON.stringify(orgData),
+    });
+  },
+
+  remove: async (id: string) => {
+    return apiCall(`/organizations/${id}`, {
+      method: 'DELETE',
     });
   },
 };

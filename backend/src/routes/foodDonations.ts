@@ -35,11 +35,12 @@ export const foodDonationsRouter = Router();
 foodDonationsRouter.post('/', requireAuth, validateBody(createSchema), async (req, res, next) => {
   try {
     const body = (req as any).validatedBody as z.infer<typeof createSchema>;
+    const userId = (req as any).user?.id as string;
     const { rows } = await withClient((client) => client.query(
       `INSERT INTO food_donations (
         organization, contact_person, phone, email, food_type, quantity, location,
-        description, available_until, status
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'available') RETURNING *`,
+        description, available_until, status, user_id
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'available',$10) RETURNING *`,
       [
         body.organization,
         body.contactPerson,
@@ -50,6 +51,7 @@ foodDonationsRouter.post('/', requireAuth, validateBody(createSchema), async (re
         body.location,
         body.description ?? null,
         body.availableUntil,
+        userId,
       ]
     ));
     res.status(201).json({ success: true, data: rows[0] });
@@ -80,6 +82,23 @@ foodDonationsRouter.get('/:id', async (req, res, next) => {
     const { rows } = await withClient((client) => client.query('SELECT * FROM food_donations WHERE id = $1', [id]));
     if (!rows[0]) return res.status(404).json({ success: false, message: 'Donation not found' });
     res.json({ success: true, data: rows[0] });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// DELETE /api/donations/food/:id (only owner)
+foodDonationsRouter.delete('/:id', requireAuth, async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const userId = (req as any).user?.id as string;
+    const { rowCount } = await withClient((client) =>
+      client.query('DELETE FROM food_donations WHERE id = $1 AND user_id = $2', [id, userId])
+    );
+    if (rowCount === 0) {
+      return res.status(404).json({ success: false, message: 'Donation not found' });
+    }
+    return res.json({ success: true, message: 'Donation deleted' });
   } catch (err) {
     next(err);
   }
