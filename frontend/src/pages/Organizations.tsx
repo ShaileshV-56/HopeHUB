@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { helperOrgApi, authApi } from "@/services/api";
+import LocationWeather from "@/components/LocationWeather";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -160,6 +161,9 @@ const Organizations = () => {
                             <Mail className="h-4 w-4" />
                             <a href={`mailto:${org.email}`} className="hover:underline">{org.email}</a>
                           </div>
+                        </div>
+                        <div className="mt-4">
+                          <LocationWeather locationText={org.address} showMap />
                         </div>
                       </div>
                       {currentUserId && org.user_id === currentUserId && (

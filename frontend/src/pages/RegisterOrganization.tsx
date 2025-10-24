@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { helperOrgApi } from "@/services/api";
 import { API_ENDPOINTS, DEFAULT_CONFIGS } from "@/config/apiConfig";
+import LocationWeather from "@/components/LocationWeather";
 
 const organizationSchema = z.object({
   organizationName: z.string().trim().min(1, "Organization name is required").max(100),
@@ -269,11 +270,10 @@ const RegisterOrganization = () => {
                 </div>
                 {coords && (
                   <div className="mt-2">
-                    <iframe
-                      title="Selected Location"
-                      className="w-full h-48 rounded"
-                      src={`https://www.google.com/maps?q=${coords.lat},${coords.lon}&z=15&output=embed`}
-                      loading="lazy"
+                    <img
+                      className="w-full h-48 object-cover rounded"
+                      alt="Map preview"
+                      src={`${API_ENDPOINTS.maps.mapbox.endpoint}/styles/v1/mapbox/streets-v11/static/pin-s+ff0000(${coords.lon},${coords.lat})/${coords.lon},${coords.lat},13,0/600x300@2x?access_token=${API_ENDPOINTS.maps.mapbox.publicKey}`}
                     />
                   </div>
                 )}
@@ -319,7 +319,8 @@ const RegisterOrganization = () => {
 
               {/* Quick Stats */}
               <div className="mt-8 pt-6 border-t">
-                <div className="grid grid-cols-3 gap-4 text-center">
+                <LocationWeather locationText={formData.address} coords={coords} />
+                <div className="grid grid-cols-3 gap-4 text-center mt-6">
                   <div>
                     <div className="flex justify-center mb-2">
                       <Building2 className="h-5 w-5 text-primary" />

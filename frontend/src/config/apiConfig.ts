@@ -37,7 +37,7 @@ export const API_ENDPOINTS = {
     openWeatherMap: {
       endpoint: 'https://api.openweathermap.org/data/2.5',
       description: 'Weather data from OpenWeatherMap',
-      publicKey: '', // Add your API key here (public APIs only)
+      publicKey: 'da2b07badfc6476192415009252010',
     },
     weatherAPI: {
       endpoint: 'https://api.weatherapi.com/v1',
@@ -79,7 +79,7 @@ export const API_ENDPOINTS = {
     },
     mapbox: {
       endpoint: 'https://api.mapbox.com',
-      publicKey: '', // Add your Mapbox public token here
+      publicKey: 'pk.eyJ1Ijoic2hhaWxlc2gtNTYiLCJhIjoiY21jYjV3MW1sMDlubjJsc2FyN3BxbXJmayJ9.qrIUd4rF1kPwlQahNrTo1g',
       description: 'Mapbox maps and geocoding',
     },
   },

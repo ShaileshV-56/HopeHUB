@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Heart, ArrowLeft, MapPin, Phone, Mail, Calendar, Filter, Package } from "lucide-react";
 import { foodDonationApi, authApi } from "@/services/api";
+import LocationWeather from "@/components/LocationWeather";
 
 interface FoodDonation {
   id: string;
@@ -186,6 +187,9 @@ const FindDonors = () => {
                             <p className="text-muted-foreground mt-1">{item.description}</p>
                           </div>
                         )}
+                        <div className="mt-4">
+                          <LocationWeather locationText={item.location} showMap />
+                        </div>
                       </div>
                       {currentUserId && item.user_id === currentUserId && (
                         <div className="flex-shrink-0">

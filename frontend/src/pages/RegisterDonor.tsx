@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { foodDonationApi } from "@/services/api";
 import { API_ENDPOINTS, DEFAULT_CONFIGS } from "@/config/apiConfig";
+import LocationWeather from "@/components/LocationWeather";
 
 const donationSchema = z.object({
   organization: z.string().trim().min(1, "Organization/Restaurant name is required").max(100),
@@ -225,11 +226,10 @@ const RegisterDonor = () => {
                 </div>
                 {coords && (
                   <div className="mt-2">
-                    <iframe
-                      title="Selected Location"
-                      className="w-full h-48 rounded"
-                      src={`https://www.google.com/maps?q=${coords.lat},${coords.lon}&z=15&output=embed`}
-                      loading="lazy"
+                    <img
+                      className="w-full h-48 object-cover rounded"
+                      alt="Map preview"
+                      src={`${API_ENDPOINTS.maps.mapbox.endpoint}/styles/v1/mapbox/streets-v11/static/pin-s+ff0000(${coords.lon},${coords.lat})/${coords.lon},${coords.lat},13,0/600x300@2x?access_token=${API_ENDPOINTS.maps.mapbox.publicKey}`}
                     />
                   </div>
                 )}
@@ -257,8 +257,8 @@ const RegisterDonor = () => {
                 </Button>
               </form>
 
-              <div className="mt-8 pt-6 border-t text-center text-sm text-muted-foreground">
-                Thank you for helping reduce food waste and feed the community.
+              <div className="mt-8 pt-6 border-t">
+                <LocationWeather locationText={formData.location} coords={coords} />
               </div>
             </CardContent>
           </Card>
