@@ -6,7 +6,7 @@ import { withClient } from '../db/pool';
 import { sendFoodRequestNotification, type EmailRecipient } from '../services/email';
 
 const createSchema = z.object({
-  organization: z.string().min(1),
+  organization: z.string().optional().nullable(),
   organizationId: z.string().uuid().optional(),
   contactPerson: z.string().min(1),
   phone: z.string().regex(/^\d{10}$/),
@@ -45,7 +45,7 @@ foodDonationsRouter.post('/', requireAuth, validateBody(createSchema), async (re
         description, available_until, status, user_id
       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'available',$10) RETURNING *`,
       [
-        body.organization,
+        body.organization ?? null,
         body.contactPerson,
         body.phone,
         body.email ?? null,
@@ -76,7 +76,7 @@ foodDonationsRouter.post('/', requireAuth, validateBody(createSchema), async (re
           body.contactPerson,
           body.foodType,
           body.quantity,
-          body.organization,
+          body.organization || 'Individual',
           recipients
         );
       }
