@@ -1,13 +1,22 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Heart, Menu, X, MapPin, Users, TrendingUp } from "lucide-react";
+import { Heart, Menu, X, MapPin, Users, LogOut, User } from "lucide-react";
+import { useAuth } from "../contexts/AuthContext";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+    setIsMenuOpen(false);
+  };
 
   const navItems = [
-    { name: "Find Food", href: "/find-donors", icon: MapPin },
+    { name: "Request Food", href: "/find-donors", icon: MapPin },
     { name: "Donate Food", href: "/donate", icon: Heart },
     { name: "Organizations", href: "/organizations", icon: Users },
     { name: "Register Organization", href: "/register-organization", icon: Users },
@@ -44,20 +53,40 @@ const Header = () => {
 
           {/* Desktop CTA Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link to="/auth">
-              <Button variant="secondary" size="sm">
-                Sign In / Sign Up
-              </Button>
-            </Link>
-            <Link to="/donate">
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="border-white/30 text-white hover:bg-white/10"
-              >
-                Offer Help
-              </Button>
-            </Link>
+            {user ? (
+              <>
+                <div className="flex items-center space-x-2 text-white">
+                  <User className="h-4 w-4" />
+                  <span className="font-medium">{user.name}</span>
+                </div>
+                <Button 
+                  variant="secondary" 
+                  size="sm"
+                  onClick={handleLogout}
+                  className="flex items-center space-x-2"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Logout</span>
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to="/auth">
+                  <Button variant="secondary" size="sm">
+                    Sign In / Sign Up
+                  </Button>
+                </Link>
+                <Link to="/donate">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="border-white/30 text-white hover:bg-white/10"
+                  >
+                    Offer Help
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -85,20 +114,40 @@ const Header = () => {
                 </Link>
               ))}
               <div className="flex flex-col space-y-2 pt-4 border-t border-white/20">
-                <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
-                  <Button variant="secondary" size="sm" className="w-full">
-                    Sign In
-                  </Button>
-                </Link>
-                <Link to="/donate" onClick={() => setIsMenuOpen(false)}>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="border-white/30 text-white hover:bg-white/10 w-full"
-                  >
-                    Offer Help
-                  </Button>
-                </Link>
+                {user ? (
+                  <>
+                    <div className="flex items-center space-x-2 text-white py-2">
+                      <User className="h-4 w-4" />
+                      <span className="font-medium">{user.name}</span>
+                    </div>
+                    <Button 
+                      variant="secondary" 
+                      size="sm" 
+                      className="w-full flex items-center justify-center space-x-2"
+                      onClick={handleLogout}
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>Logout</span>
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
+                      <Button variant="secondary" size="sm" className="w-full">
+                        Sign In / Sign Up
+                      </Button>
+                    </Link>
+                    <Link to="/donate" onClick={() => setIsMenuOpen(false)}>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="border-white/30 text-white hover:bg-white/10 w-full"
+                      >
+                        Offer Help
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </div>
             </nav>
           </div>
