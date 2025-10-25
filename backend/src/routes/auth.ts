@@ -66,14 +66,21 @@ authRouter.post('/signin', validateBody(signinSchema), async (req, res, next) =>
 });
 
 // GET /api/auth/me
-authRouter.get('/me', (req, res) => {
+authRouter.get('/me',async (req, res) => {
   const auth = req.headers.authorization || '';
   const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
   if (!token) return res.status(401).json({ success: false, message: 'Missing token' });
   try {
     const payload = verify(token, env.jwtSecret as Secret) as JwtPayload | string;
     if (typeof payload === 'string') return res.status(401).json({ success: false, message: 'Invalid token' });
-    res.json({ success: true, data: { id: payload.sub, email: (payload as any).email } });
+    const { rows } = await withClient((client) => client.query(
+      'SELECT id, name, email, created_at FROM users WHERE id = $1',
+      [payload.sub]
+    ));
+    const user = rows[0];
+    if (!user) return res.status(401).json({ success: false, message: 'User not found' });
+    
+    res.json({ success: true, data: user });
   } catch {
     res.status(401).json({ success: false, message: 'Invalid token' });
   }
