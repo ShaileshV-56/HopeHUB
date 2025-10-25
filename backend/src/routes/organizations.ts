@@ -10,6 +10,7 @@ const registerSchema = z.object({
   phone: z.string().regex(/^\d{10}$/),
   email: z.string().email(),
   address: z.string().min(1),
+  description: z.string().optional(),
   capacity: z.number().int().min(0).optional(),
   specialization: z.string().optional(),
 });
@@ -34,14 +35,15 @@ organizationsRouter.post('/register', requireAuth, validateBody(registerSchema),
     const userId = (req as any).user?.id as string;
     const { rows } = await withClient((client) => client.query(
       `INSERT INTO helper_organizations (
-        organization_name, contact_person, phone, email, address, capacity, specialization, status, user_id
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,'active',$8) RETURNING *`,
+        organization_name, contact_person, phone, email, address, description, capacity, specialization, status, user_id
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'active',$9) RETURNING *`,
       [
         body.organizationName,
         body.contactPerson,
         body.phone,
         body.email,
         body.address,
+        body.description ?? null,
         body.capacity ?? null,
         body.specialization ?? null,
         userId,
