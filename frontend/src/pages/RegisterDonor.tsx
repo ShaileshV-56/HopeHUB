@@ -13,7 +13,7 @@ import { API_ENDPOINTS, DEFAULT_CONFIGS } from "@/config/apiConfig";
 import LocationWeather from "@/components/LocationWeather";
 
 const donationSchema = z.object({
-  organization: z.string().trim().max(100).optional().or(z.literal("")),
+  organization: z.string().trim().min(1, "Organization/Restaurant name is required").max(100),
   contactPerson: z.string().trim().min(1, "Contact person is required").max(100),
   phone: z.string().regex(/^\d{10}$/, "Phone number must be exactly 10 digits"),
   email: z.string().trim().email("Invalid email address").max(255).optional().or(z.literal("")),
@@ -77,7 +77,7 @@ const RegisterDonor = () => {
       const validated = donationSchema.parse(formData);
 
       const result = await foodDonationApi.submit({
-        organization: validated.organization || null,
+        organization: validated.organization,
         contactPerson: validated.contactPerson,
         phone: validated.phone,
         email: validated.email || null,
@@ -163,8 +163,8 @@ const RegisterDonor = () => {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="organization">Organization/Restaurant Name (optional)</Label>
-                    <Input id="organization" placeholder="Enter your organization name (optional)" value={formData.organization} onChange={(e) => handleInputChange("organization", e.target.value)} className={errors.organization ? "border-red-500" : ""} />
+                    <Label htmlFor="organization">Organization/Restaurant Name *</Label>
+                    <Input id="organization" placeholder="Enter your organization name" value={formData.organization} onChange={(e) => handleInputChange("organization", e.target.value)} className={errors.organization ? "border-red-500" : ""} />
                     {errors.organization && <p className="text-sm text-red-500">{errors.organization}</p>}
                   </div>
 

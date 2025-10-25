@@ -37,7 +37,7 @@ export const API_ENDPOINTS = {
     openWeatherMap: {
       endpoint: 'https://api.openweathermap.org/data/2.5',
       description: 'Weather data from OpenWeatherMap',
-      publicKey: '', // Add your OpenWeatherMap API key here (sign up at https://openweathermap.org/api)
+      publicKey: 'da2b07badfc6476192415009252010',
     },
     weatherAPI: {
       endpoint: 'https://api.weatherapi.com/v1',
