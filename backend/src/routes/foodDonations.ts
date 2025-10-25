@@ -3,9 +3,11 @@ import { z } from 'zod';
 import { validateBody } from '../middleware/validate';
 import { requireAuth } from '../middleware/auth';
 import { withClient } from '../db/pool';
+import { sendFoodRequestNotification, type EmailRecipient } from '../services/email';
 
 const createSchema = z.object({
   organization: z.string().min(1),
+  organizationId: z.string().uuid().optional(),
   contactPerson: z.string().min(1),
   phone: z.string().regex(/^\d{10}$/),
   email: z.string().email().optional().nullable(),
@@ -36,6 +38,7 @@ foodDonationsRouter.post('/', requireAuth, validateBody(createSchema), async (re
   try {
     const body = (req as any).validatedBody as z.infer<typeof createSchema>;
     const userId = (req as any).user?.id as string;
+    
     const { rows } = await withClient((client) => client.query(
       `INSERT INTO food_donations (
         organization, contact_person, phone, email, food_type, quantity, location,
@@ -54,6 +57,33 @@ foodDonationsRouter.post('/', requireAuth, validateBody(createSchema), async (re
         userId,
       ]
     ));
+
+    try {
+      const usersResult = await withClient((client) => 
+        client.query('SELECT name, email FROM users')
+      );
+      const orgsResult = await withClient((client) => 
+        client.query('SELECT contact_person as name, email FROM helper_organizations')
+      );
+      
+      const recipients: EmailRecipient[] = [
+        ...usersResult.rows.map(u => ({ email: u.email, name: u.name })),
+        ...orgsResult.rows.map(o => ({ email: o.email, name: o.name })),
+      ];
+
+      if (recipients.length > 0) {
+        await sendFoodRequestNotification(
+          body.contactPerson,
+          body.foodType,
+          body.quantity,
+          body.organization,
+          recipients
+        );
+      }
+    } catch (emailError) {
+      console.error('[food-donations] Failed to send email notification:', emailError);
+    }
+
     res.status(201).json({ success: true, data: rows[0] });
   } catch (err) {
     next(err);
