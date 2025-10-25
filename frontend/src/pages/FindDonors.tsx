@@ -1,216 +1,280 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Heart, ArrowLeft, MapPin, Phone, Mail, Calendar, Filter, Package } from "lucide-react";
-import { foodDonationApi, authApi } from "@/services/api";
-import LocationWeather from "@/components/LocationWeather";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Heart, ArrowLeft, Package, MapPin, Clock } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "../contexts/AuthContext";
+import { z } from "zod";
+import { API_URL } from "../config/backend";
+import Header from "@/components/Header";
 
-interface FoodDonation {
+interface Organization {
   id: string;
-  organization: string;
-  contact_person: string;
-  phone: string;
-  email: string | null;
-  food_type: string;
-  quantity: string;
-  location: string;
-  description: string | null;
-  available_until: string;
-  status: string;
-  created_at: string;
-  user_id?: string | null;
+  organization_name: string;
 }
 
-const formatDate = (iso: string | null) => {
-  if (!iso) return "—";
-  try {
-    const d = new Date(iso);
-    return d.toLocaleDateString();
-  } catch {
-    return iso;
-  }
-};
+const requestSchema = z.object({
+  organization: z.string().min(1, "Organization is required"),
+  phone: z.string().regex(/^\d{10}$/, "Phone number must be exactly 10 digits"),
+  foodType: z.string().min(1, "Requested item is required"),
+  quantity: z.string().trim().min(1, "Quantity is required"),
+  location: z.string().trim().min(1, "Location is required"),
+  availableUntil: z.string().min(1, "Date is required"),
+  description: z.string().optional(),
+});
 
 const FindDonors = () => {
-  const [donations, setDonations] = useState<FoodDonation[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [query, setQuery] = useState("");
-  const [availableOnly, setAvailableOnly] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    organization: "",
+    phone: "",
+    foodType: "",
+    quantity: "",
+    location: "",
+    description: "",
+    availableUntil: ""
+  });
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+  const { user, token } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchDonations = async () => {
-      setLoading(true);
-      setError(null);
-      const [me, res] = await Promise.all([
-        authApi.getCurrentUser().catch(() => ({ success: false } as any)),
-        foodDonationApi.getAll(),
-      ]);
-      if (me.success && (me.data as any)?.id) {
-        setCurrentUserId((me.data as any).id);
-      } else {
-        setCurrentUserId(null);
+    const fetchOrganizations = async () => {
+      try {
+        const response = await fetch(`${API_URL}/organizations`);
+        if (response.ok) {
+          const data = await response.json();
+          setOrganizations(data.data || []);
+        }
+      } catch (error) {
+        console.error('Failed to fetch organizations:', error);
       }
-      if (!res.success) {
-        setError(res.error || "Failed to load food donations");
-        setLoading(false);
-        return;
-      }
-      setDonations((res.data || []) as FoodDonation[]);
-      setLoading(false);
     };
-    fetchDonations();
+    fetchOrganizations();
   }, []);
 
-  const handleDelete = async (id: string) => {
-    const ok = confirm('Delete this donation?');
-    if (!ok) return;
-    const res = await foodDonationApi.remove(id);
-    if (!res.success) {
-      alert(res.error || 'Failed to delete');
-      return;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrors({});
+    setIsSubmitting(true);
+    
+    try {
+      const validatedData = requestSchema.parse(formData);
+      const selectedOrg = organizations.find(o => o.id === validatedData.organization);
+
+      const response = await fetch(`${API_URL}/donations/food`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          organization: selectedOrg?.organization_name || validatedData.organization,
+          organizationId: validatedData.organization,
+          contactPerson: user?.name || '',
+          phone: validatedData.phone,
+          email: user?.email || '',
+          foodType: validatedData.foodType,
+          quantity: validatedData.quantity,
+          location: validatedData.location,
+          description: validatedData.description || '',
+          availableUntil: validatedData.availableUntil,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to submit request');
+      }
+
+      toast({
+        title: "Request Submitted!",
+        description: "Your food request has been submitted successfully. All registered users and organizations will be notified.",
+      });
+
+      setFormData({
+        organization: "",
+        phone: "",
+        foodType: "",
+        quantity: "",
+        location: "",
+        description: "",
+        availableUntil: ""
+      });
+
+      setTimeout(() => navigate("/donate"), 2000);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const fieldErrors: Record<string, string> = {};
+        error.errors.forEach((err) => {
+          if (err.path[0]) {
+            fieldErrors[err.path[0] as string] = err.message;
+          }
+        });
+        setErrors(fieldErrors);
+        toast({
+          title: "Validation Error",
+          description: "Please check the form for errors.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: (error as Error).message || "Failed to submit request. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setIsSubmitting(false);
     }
-    setDonations(prev => prev.filter(d => d.id !== id));
   };
 
-  const filteredDonations = useMemo(() => {
-    const q = query.toLowerCase();
-    return donations.filter((d) => {
-      const matchesQuery =
-        d.organization.toLowerCase().includes(q) ||
-        d.location.toLowerCase().includes(q) ||
-        d.food_type.toLowerCase().includes(q) ||
-        (d.description || '').toLowerCase().includes(q);
-      const matchesAvailable = availableOnly ? d.status === 'available' : true;
-      return matchesQuery && matchesAvailable;
-    });
-  }, [donations, query, availableOnly]);
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const minDate = tomorrow.toISOString().split('T')[0];
 
   return (
-    <div className="min-h-screen bg-gradient-hero">
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <Link to="/" className="inline-flex items-center text-white/90 hover:text-white transition-smooth">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Home
-          </Link>
+    <>
+      <Header />
+      <div className="min-h-screen bg-gradient-hero py-12">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between mb-8">
+            <Link to="/" className="inline-flex items-center text-white/90 hover:text-white transition-smooth">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Home
+            </Link>
+          </div>
 
-          <Link to="/" className="inline-block">
-            <div className="flex items-center space-x-2">
-              <Heart className="h-6 w-6 text-white" />
-              <span className="text-white font-semibold">HopeHUB</span>
-            </div>
-          </Link>
-        </div>
-
-        <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">Find Food Donations</h1>
-          <p className="text-white/90 text-lg max-w-2xl mx-auto">Search available food donations by location, type, and availability.</p>
-        </div>
-
-        <div className="max-w-4xl mx-auto mb-8">
-          <Card className="bg-white/95 backdrop-blur-sm shadow-large">
-            <CardContent className="p-6">
-              <div className="flex flex-col md:flex-row gap-4">
-                <div className="flex-1 relative">
-                  <Input placeholder="Search by org, location, type..." value={query} onChange={(e) => setQuery(e.target.value)} />
+          <Card className="max-w-2xl mx-auto shadow-xl">
+            <CardHeader>
+              <CardTitle className="text-3xl flex items-center">
+                <Package className="mr-3 h-8 w-8 text-primary" />
+                Request Food or Resources
+              </CardTitle>
+              <CardDescription>
+                Submit your request and we'll notify all registered organizations and users
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="requester">Requester Name</Label>
+                  <Input
+                    id="requester"
+                    value={user?.name || ''}
+                    disabled
+                    className="bg-gray-100"
+                  />
+                  <p className="text-sm text-gray-500">Auto-filled from your account</p>
                 </div>
-                <Button variant={availableOnly ? "default" : "outline"} onClick={() => setAvailableOnly((v) => !v)} className="md:w-48">
-                  <Filter className="h-4 w-4 mr-2" />
-                  {availableOnly ? "Showing Available" : "Available Only"}
+
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Contact Phone *</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="10 digit phone number"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({...formData, phone: e.target.value.replace(/\D/g, "").slice(0, 10)})}
+                    className={errors.phone ? "border-red-500" : ""}
+                    maxLength={10}
+                  />
+                  {errors.phone && <p className="text-sm text-red-500">{errors.phone}</p>}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="organization">Select Organization *</Label>
+                  <Select value={formData.organization} onValueChange={(value) => setFormData({...formData, organization: value})}>
+                    <SelectTrigger className={errors.organization ? "border-red-500" : ""}>
+                      <SelectValue placeholder="Choose an organization" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {organizations.map((org) => (
+                        <SelectItem key={org.id} value={org.id}>
+                          {org.organization_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.organization && <p className="text-sm text-red-500">{errors.organization}</p>}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="foodType">Requested Item / Resource *</Label>
+                  <Input
+                    id="foodType"
+                    value={formData.foodType}
+                    onChange={(e) => setFormData({...formData, foodType: e.target.value})}
+                    placeholder="e.g., Rice, Vegetables, Blankets"
+                    className={errors.foodType ? "border-red-500" : ""}
+                  />
+                  {errors.foodType && <p className="text-sm text-red-500">{errors.foodType}</p>}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="quantity">Quantity / Description *</Label>
+                  <Input
+                    id="quantity"
+                    value={formData.quantity}
+                    onChange={(e) => setFormData({...formData, quantity: e.target.value})}
+                    placeholder="e.g., 50 kg, 100 meals"
+                    className={errors.quantity ? "border-red-500" : ""}
+                  />
+                  {errors.quantity && <p className="text-sm text-red-500">{errors.quantity}</p>}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="location">Location *</Label>
+                  <Input
+                    id="location"
+                    value={formData.location}
+                    onChange={(e) => setFormData({...formData, location: e.target.value})}
+                    placeholder="Your location"
+                    className={errors.location ? "border-red-500" : ""}
+                  />
+                  {errors.location && <p className="text-sm text-red-500">{errors.location}</p>}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="availableUntil">Needed By Date *</Label>
+                  <Input
+                    id="availableUntil"
+                    type="date"
+                    min={minDate}
+                    value={formData.availableUntil}
+                    onChange={(e) => setFormData({...formData, availableUntil: e.target.value})}
+                    className={errors.availableUntil ? "border-red-500" : ""}
+                  />
+                  {errors.availableUntil && <p className="text-sm text-red-500">{errors.availableUntil}</p>}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="description">Additional Details (Optional)</Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData({...formData, description: e.target.value})}
+                    placeholder="Any additional information..."
+                    rows={4}
+                  />
+                </div>
+
+                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                  {isSubmitting ? "Submitting..." : "Submit Request"}
                 </Button>
-              </div>
+              </form>
             </CardContent>
           </Card>
         </div>
-
-        <div className="max-w-4xl mx-auto">
-          {loading && (
-            <Card className="bg-white/95 backdrop-blur-sm text-center p-8">
-              <div className="text-muted-foreground">Loading donors...</div>
-            </Card>
-          )}
-          {error && (
-            <Card className="bg-white/95 backdrop-blur-sm text-center p-8">
-              <div className="text-red-600">{error}</div>
-            </Card>
-          )}
-
-          {!loading && !error && (
-            <div className="grid gap-6">
-              {filteredDonations.map((item) => (
-                <Card key={item.id} className="bg-white/95 backdrop-blur-sm shadow-large hover:shadow-green transition-smooth">
-                  <CardContent className="p-6">
-                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-xl font-semibold">{item.organization}</h3>
-                          <Badge variant="secondary">{item.food_type}</Badge>
-                          {item.status === 'available' && (
-                            <Badge className="bg-success text-white">Available</Badge>
-                          )}
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4" />
-                            <span>{item.location}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4" />
-                            <span>Available until: {formatDate(item.available_until)}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Package className="h-4 w-4" />
-                            <span>Qty: {item.quantity}</span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-4 text-sm">
-                          <div className="flex items-center gap-2">
-                            <Phone className="h-4 w-4" />
-                            <a href={`tel:${item.phone}`} className="hover:underline">{item.phone}</a>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Mail className="h-4 w-4" />
-                            {item.email && <a href={`mailto:${item.email}`} className="hover:underline">{item.email}</a>}
-                          </div>
-                        </div>
-
-                        {item.description && (
-                          <div className="mt-4 text-sm">
-                            <span className="font-medium">Details:</span>
-                            <p className="text-muted-foreground mt-1">{item.description}</p>
-                          </div>
-                        )}
-                        <div className="mt-4">
-                          <LocationWeather locationText={item.location} showMap />
-                        </div>
-                      </div>
-                      {currentUserId && item.user_id === currentUserId && (
-                        <div className="flex-shrink-0">
-                          <Button variant="destructive" onClick={() => handleDelete(item.id)}>Delete</Button>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-
-              {filteredDonations.length === 0 && (
-                <Card className="bg-white/95 backdrop-blur-sm text-center p-8">
-                  <div className="text-muted-foreground">No food donations found. Try adjusting your search.</div>
-                </Card>
-              )}
-            </div>
-          )}
-        </div>
       </div>
-    </div>
+    </>
   );
 };
 

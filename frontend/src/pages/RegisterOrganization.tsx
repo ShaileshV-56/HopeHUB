@@ -18,6 +18,7 @@ const organizationSchema = z.object({
   phone: z.string().regex(/^\d{10}$/, "Phone number must be exactly 10 digits"),
   email: z.string().trim().email("Invalid email address").max(255),
   address: z.string().trim().min(1, "Address is required").max(500),
+  description: z.string().max(500).optional(),
   capacity: z.number().min(1, "Capacity must be at least 1").optional(),
   specialization: z.string().max(500).optional(),
 });
@@ -29,6 +30,7 @@ const RegisterOrganization = () => {
     phone: "",
     email: "",
     address: "",
+    description: "",
     capacity: "",
     specialization: "",
   });
@@ -81,6 +83,7 @@ const RegisterOrganization = () => {
         phone: validatedData.phone,
         email: validatedData.email,
         address: coords ? `${coords.lat},${coords.lon}` : validatedData.address,
+        description: validatedData.description || null,
         capacity: validatedData.capacity,
         specialization: validatedData.specialization || null,
       });
@@ -101,6 +104,7 @@ const RegisterOrganization = () => {
         phone: "",
         email: "",
         address: "",
+        description: "",
         capacity: "",
         specialization: "",
       });
@@ -282,6 +286,20 @@ const RegisterOrganization = () => {
                     Weather: {(weather.weather?.[0]?.description || '').toString()} | Temp: {Math.round(weather.main?.temp)}°{DEFAULT_CONFIGS.weather.units === 'metric' ? 'C' : 'F'}
                   </div>
                 )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description (optional)</Label>
+                  <Textarea
+                    id="description"
+                    placeholder="Brief description of your organization and services"
+                    value={formData.description}
+                    onChange={(e) => handleInputChange("description", e.target.value)}
+                    rows={3}
+                  />
+                  {errors.description && (
+                    <p className="text-sm text-red-500">{errors.description}</p>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

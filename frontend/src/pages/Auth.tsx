@@ -6,8 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Heart, ArrowLeft } from "lucide-react";
 import { z } from "zod";
-import { authApi } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "../contexts/AuthContext";
 
 const signUpSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100),
@@ -29,6 +29,12 @@ const Auth = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { login, signup, user } = useAuth();
+
+  if (user) {
+    navigate('/');
+    return null;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,24 +56,13 @@ const Auth = () => {
           return;
         }
 
-        const result = await authApi.signup({ name, email, password });
+        await signup(name, email, password);
         
-        if (!result.success) {
-          toast({
-            title: "Error",
-            description: result.error || "Failed to create account",
-            variant: "destructive",
-          });
-          setIsSubmitting(false);
-          return;
-        }
-
         toast({
           title: "Success!",
-          description: "Account created successfully. Please sign in.",
+          description: "Account created successfully. Welcome to HopeHUB!",
         });
-        setIsSignUp(false);
-        setPassword("");
+        navigate("/");
       } else {
         const validation = signInSchema.safeParse({ email, password });
         if (!validation.success) {
@@ -82,25 +77,8 @@ const Auth = () => {
           return;
         }
 
-        const result = await authApi.signin({ email, password });
+        await login(email, password);
         
-        if (!result.success) {
-          toast({
-            title: "Error",
-            description: result.error || "Invalid email or password",
-            variant: "destructive",
-          });
-          setIsSubmitting(false);
-          return;
-        }
-
-        try {
-          const token = (result.data as any)?.token;
-          if (token && typeof localStorage !== 'undefined') {
-            localStorage.setItem('auth_token', token);
-          }
-        } catch {}
-
         toast({
           title: "Welcome back!",
           description: "You have been signed in successfully.",
@@ -113,7 +91,6 @@ const Auth = () => {
         description: error.message || "An error occurred",
         variant: "destructive",
       });
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -121,41 +98,25 @@ const Auth = () => {
   return (
     <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Website Title */}
         <div className="text-center mb-8">
-          <Link to="/" className="inline-block">
-            <h1 className="text-4xl font-bold text-white mb-2">HopeHUB</h1>
-            <p className="text-white/80 text-lg">Emergency Aid Platform</p>
+          <Link to="/" className="inline-flex items-center space-x-2 mb-4">
+            <Heart className="h-12 w-12 text-white" />
+            <span className="text-4xl font-bold text-white">HopeHUB</span>
           </Link>
+          <p className="text-white/80">Food & Shelter Aid Platform</p>
         </div>
 
-        {/* Back to Home */}
-        <Link 
-          to="/" 
-          className="inline-flex items-center text-white/90 hover:text-white mb-6 transition-smooth"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Home
-        </Link>
-
-        <Card className="bg-white/95 backdrop-blur-sm shadow-large">
-          <CardHeader className="text-center">
-            <div className="flex justify-center mb-4">
-              <div className="p-3 bg-gradient-primary rounded-lg">
-                <Heart className="h-8 w-8 text-white" />
-              </div>
-            </div>
-            <CardTitle className="text-2xl">
-              {isSignUp ? "Join HopeHUB" : "Welcome Back"}
+        <Card className="shadow-xl">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl text-center">
+              {isSignUp ? "Create an Account" : "Welcome Back"}
             </CardTitle>
-            <CardDescription>
-              {isSignUp 
-                ? "Create your account to start making a difference" 
-                : "Sign in to your HopeHUB account"
-              }
+            <CardDescription className="text-center">
+              {isSignUp
+                ? "Join HopeHUB to help your community"
+                : "Sign in to access your account"}
             </CardDescription>
           </CardHeader>
-          
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               {isSignUp && (
@@ -164,12 +125,9 @@ const Auth = () => {
                   <Input
                     id="name"
                     type="text"
-                    placeholder="Enter your full name"
+                    placeholder="John Doe"
                     value={name}
-                    onChange={(e) => {
-                      setName(e.target.value);
-                      if (errors.name) setErrors(prev => ({ ...prev, name: "" }));
-                    }}
+                    onChange={(e) => setName(e.target.value)}
                     className={errors.name ? "border-red-500" : ""}
                   />
                   {errors.name && (
@@ -177,59 +135,78 @@ const Auth = () => {
                   )}
                 </div>
               )}
-              
+
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder="you@example.com"
                   value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    if (errors.email) setErrors(prev => ({ ...prev, email: "" }));
-                  }}
+                  onChange={(e) => setEmail(e.target.value)}
                   className={errors.email ? "border-red-500" : ""}
                 />
                 {errors.email && (
                   <p className="text-sm text-red-500">{errors.email}</p>
                 )}
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Enter your password (min 6 characters)"
+                  placeholder="••••••••"
                   value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    if (errors.password) setErrors(prev => ({ ...prev, password: "" }));
-                  }}
+                  onChange={(e) => setPassword(e.target.value)}
                   className={errors.password ? "border-red-500" : ""}
                 />
                 {errors.password && (
                   <p className="text-sm text-red-500">{errors.password}</p>
                 )}
+                {!isSignUp && (
+                  <p className="text-xs text-gray-500">
+                    Must be at least 6 characters
+                  </p>
+                )}
               </div>
 
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? "Please wait..." : (isSignUp ? "Create Account" : "Sign In")}
+              <Button
+                type="submit"
+                className="w-full bg-primary hover:bg-primary/90"
+                disabled={isSubmitting}
+              >
+                {isSubmitting
+                  ? "Processing..."
+                  : isSignUp
+                  ? "Create Account"
+                  : "Sign In"}
               </Button>
             </form>
 
             <div className="mt-6 text-center">
-              <p className="text-sm text-muted-foreground">
-                {isSignUp ? "Already have an account?" : "Don't have an account?"}
-                <Button
-                  variant="link"
-                  className="p-0 ml-1 h-auto text-primary"
-                  onClick={() => setIsSignUp(!isSignUp)}
-                >
-                  {isSignUp ? "Sign In" : "Sign Up"}
-                </Button>
-              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSignUp(!isSignUp);
+                  setErrors({});
+                }}
+                className="text-sm text-primary hover:underline"
+              >
+                {isSignUp
+                  ? "Already have an account? Sign In"
+                  : "Don't have an account? Sign Up"}
+              </button>
+            </div>
+
+            <div className="mt-4 text-center">
+              <Link
+                to="/"
+                className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Home
+              </Link>
             </div>
           </CardContent>
         </Card>
