@@ -14,7 +14,11 @@ export function createApiClient(baseUrl: string) {
       // Inject auth token if present
       let authHeaders: Record<string, string> = {};
       try {
-        const token = typeof localStorage !== 'undefined' ? localStorage.getItem('auth_token') : null;
+        // Prefer the standard 'token' key; fall back to legacy 'auth_token'
+        let token: string | null = null;
+        if (typeof localStorage !== 'undefined') {
+          token = localStorage.getItem('token') || localStorage.getItem('auth_token');
+        }
         if (token) authHeaders['Authorization'] = `Bearer ${token}`;
       } catch {}
       const response = await fetch(`${baseUrl}${endpoint}`, {

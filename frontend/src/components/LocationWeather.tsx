@@ -28,6 +28,7 @@ const parseLatLon = (text?: string | null): { lat: number; lon: number } | null 
 export default function LocationWeather({ locationText, coords, showMap = true, className }: Props) {
   const [geo, setGeo] = useState<GeocodeResult | null>(null);
   const [weather, setWeather] = useState<any>(null);
+  const [fallbackWeather, setFallbackWeather] = useState<any>(null);
   const hasOWMKey = !!API_ENDPOINTS.weather.openWeatherMap.publicKey;
 
   const effectiveCoords = useMemo(() => {
@@ -67,14 +68,23 @@ export default function LocationWeather({ locationText, coords, showMap = true, 
   useEffect(() => {
     let cancelled = false;
     const fetchWeather = async () => {
-      if (!hasOWMKey) return;
       const c = effectiveCoords || geo;
       if (!c) return;
       try {
-        const url = `${API_ENDPOINTS.weather.openWeatherMap.endpoint}/weather?lat=${c.lat}&lon=${c.lon}&appid=${API_ENDPOINTS.weather.openWeatherMap.publicKey}&units=${DEFAULT_CONFIGS.weather.units}`;
-        const res = await fetch(url);
-        const data = await res.json();
-        if (!cancelled) setWeather(data);
+        if (hasOWMKey) {
+          const url = `${API_ENDPOINTS.weather.openWeatherMap.endpoint}/weather?lat=${c.lat}&lon=${c.lon}&appid=${API_ENDPOINTS.weather.openWeatherMap.publicKey}&units=${DEFAULT_CONFIGS.weather.units}`;
+          const res = await fetch(url);
+          const data = await res.json();
+          if (!cancelled) setWeather(data);
+        } else {
+          // Fallback: Open-Meteo (no API key required)
+          const unitParam = DEFAULT_CONFIGS.weather.units === 'metric' ? 'celsius' : 'fahrenheit';
+          const windUnit = DEFAULT_CONFIGS.weather.units === 'metric' ? 'kmh' : 'mph';
+          const url = `https://api.open-meteo.com/v1/forecast?latitude=${c.lat}&longitude=${c.lon}&current_weather=true&temperature_unit=${unitParam}&windspeed_unit=${windUnit}`;
+          const res = await fetch(url);
+          const data = await res.json();
+          if (!cancelled) setFallbackWeather(data?.current_weather || null);
+        }
       } catch {}
     };
     fetchWeather();
@@ -116,7 +126,14 @@ export default function LocationWeather({ locationText, coords, showMap = true, 
               {DEFAULT_CONFIGS.weather.units === 'metric' ? 'C' : 'F'} | Humidity: {weather.main?.humidity}%
             </div>
           )}
-          {!weather && hasOWMKey && (effectiveCoords || geo) && (
+          {!weather && fallbackWeather && (
+            <div>
+              <span className="font-medium text-foreground">Weather:</span>{' '}
+              Wind {Math.round(fallbackWeather.windspeed)} {DEFAULT_CONFIGS.weather.units === 'metric' ? 'km/h' : 'mph'} | Temp: {Math.round(fallbackWeather.temperature)}°
+              {DEFAULT_CONFIGS.weather.units === 'metric' ? 'C' : 'F'}
+            </div>
+          )}
+          {!weather && !fallbackWeather && (effectiveCoords || geo) && (
             <div className="text-xs">Loading weather…</div>
           )}
         </div>

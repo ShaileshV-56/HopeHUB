@@ -162,6 +162,29 @@ foodRequestsRouter.post('/:id/pledges', requireAuth, validateBody(z.object({
       }
     }
 
+    // Notify the original requester about the pledge (if they provided an email)
+    try {
+      const requesterEmail: string | null = reqRows[0]?.email ?? null;
+      if (requesterEmail) {
+        const subject = 'Good news! Someone pledged to your request on HopeHUB';
+        const htmlContent = `
+          <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+              <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                <h2 style="color: #10b981;">You have a new pledge</h2>
+                <p>A community member pledged <strong>${quantity}</strong> towards your request for <strong>${reqRows[0].requested_item}</strong>.</p>
+                ${userEmail ? `<p>You can reach them at: <a href="mailto:${userEmail}">${userEmail}</a></p>` : ''}
+                <p>We will keep aggregating pledges until your need is met.</p>
+                <p style="margin-top: 30px; color: #6b7280; font-size: 0.9em;">This is an automated message from HopeHUB.</p>
+              </div>
+            </body>
+          </html>`;
+        await sendEmail({ to: [{ email: requesterEmail }], subject, htmlContent });
+      }
+    } catch (e) {
+      console.warn('[pledge] Failed to notify requester via email:', e);
+    }
+
     return res.status(201).json({ success: true, message: 'Pledge recorded' });
   } catch (err) {
     next(err);
