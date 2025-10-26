@@ -126,6 +126,12 @@ export const foodRequestApi = {
       body: JSON.stringify(data),
     });
   },
+  pledge: async (id: string, quantity: string) => {
+    return apiCall(`/food-requests/${id}/pledges`, {
+      method: 'POST',
+      body: JSON.stringify({ quantity }),
+    });
+  },
   getAll: async () => {
     return apiCall('/food-requests', {
       method: 'GET',

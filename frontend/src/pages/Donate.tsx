@@ -6,6 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Heart, ArrowLeft, MapPin, Phone, Mail, Calendar, Filter, Package, User } from "lucide-react";
 import { API_URL } from "../config/backend";
+import { Slider } from "@/components/ui/slider";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useAuth } from "@/contexts/AuthContext";
+import { foodRequestApi } from "@/services/api";
 import Header from "@/components/Header";
 
 interface FoodRequest {
@@ -21,6 +25,8 @@ interface FoodRequest {
   needed_by: string;
   status: string;
   created_at: string;
+  requested_total?: number;
+  pledged_total?: number;
 }
 
 const formatDate = (iso: string | null) => {
@@ -55,6 +61,8 @@ const Donate = () => {
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [availableOnly, setAvailableOnly] = useState(false);
+  const { user } = useAuth();
+  const [activePledge, setActivePledge] = useState<{ id: string; value: number } | null>(null);
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -89,6 +97,19 @@ const Donate = () => {
       return matchesQuery && matchesAvailable;
     });
   }, [requests, query, availableOnly]);
+
+  const parseRequested = (r: FoodRequest) => r.requested_total ?? (parseInt(String(r.quantity).replace(/\D/g, "")) || 0);
+  const parsePledged = (r: FoodRequest) => r.pledged_total ?? 0;
+  const remaining = (r: FoodRequest) => Math.max(0, parseRequested(r) - parsePledged(r));
+
+  const submitPledge = async (req: FoodRequest, amount: number) => {
+    const res = await foodRequestApi.pledge(req.id, String(amount));
+    if (!res.success) throw new Error(res.error || 'Failed to pledge');
+    // Refresh list
+    const response = await fetch(`${API_URL}/food-requests`);
+    const data = await response.json();
+    setRequests((data.data || []) as FoodRequest[]);
+  };
 
   return (
     <>
@@ -193,7 +214,7 @@ const Donate = () => {
                     <div className="flex items-start space-x-2 text-sm">
                       <Package className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0" />
                       <div>
-                        <p className="text-gray-600">Quantity: {request.quantity}</p>
+                        <p className="text-gray-600">Requested: {parseRequested(request)} | Pledged: {parsePledged(request)} | Remaining: {remaining(request)}</p>
                       </div>
                     </div>
 
@@ -237,6 +258,36 @@ const Donate = () => {
                         Submitted: {formatDateTime(request.created_at)}
                       </p>
                     </div>
+
+                    {user && request.status === 'active' && remaining(request) > 0 && (
+                      <div className="pt-3 border-t">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button className="w-full">Donate to this request</Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>How much would you like to donate?</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <div className="text-sm text-muted-foreground">Remaining needed: {remaining(request)}</div>
+                              <Slider
+                                defaultValue={[Math.min(remaining(request), 1)]}
+                                max={Math.max(1, remaining(request))}
+                                min={1}
+                                step={1}
+                                onValueChange={(v) => setActivePledge({ id: request.id, value: v[0] })}
+                              />
+                              <div className="text-sm">You will donate: {activePledge?.id === request.id ? activePledge.value : 1}</div>
+                              <Button onClick={async () => {
+                                const amount = activePledge?.id === request.id ? activePledge.value : 1;
+                                await submitPledge(request, amount);
+                              }}>Confirm Donation</Button>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               ))}
