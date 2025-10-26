@@ -80,12 +80,12 @@ const Donate = () => {
     const q = query.toLowerCase();
     return requests.filter((r) => {
       const matchesQuery =
-        r.organization.toLowerCase().includes(q) ||
-        r.contact_person.toLowerCase().includes(q) ||
+        (r.organization || '').toLowerCase().includes(q) ||
+        r.requester_name.toLowerCase().includes(q) ||
         r.location.toLowerCase().includes(q) ||
-        r.food_type.toLowerCase().includes(q) ||
+        r.requested_item.toLowerCase().includes(q) ||
         (r.description || '').toLowerCase().includes(q);
-      const matchesAvailable = availableOnly ? r.status === 'available' : true;
+      const matchesAvailable = availableOnly ? r.status === 'active' : true;
       return matchesQuery && matchesAvailable;
     });
   }, [requests, query, availableOnly]);
@@ -133,7 +133,7 @@ const Donate = () => {
                   onClick={() => setAvailableOnly(!availableOnly)}
                   className="whitespace-nowrap"
                 >
-                  {availableOnly ? "Show All" : "Available Only"}
+                  {availableOnly ? "Show All" : "Active Only"}
                 </Button>
               </div>
             </CardContent>
@@ -177,7 +177,7 @@ const Donate = () => {
                       <CardTitle className="text-lg line-clamp-2">
                         {request.requested_item}
                       </CardTitle>
-                      <Badge variant={request.status === 'available' ? 'default' : 'secondary'}>
+                      <Badge variant={request.status === 'active' ? 'default' : 'secondary'}>
                         {request.status}
                       </Badge>
                     </div>
