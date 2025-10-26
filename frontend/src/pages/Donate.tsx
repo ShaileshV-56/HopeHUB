@@ -10,18 +10,17 @@ import Header from "@/components/Header";
 
 interface FoodRequest {
   id: string;
-  organization: string;
-  contact_person: string;
+  requester_name: string;
   phone: string;
   email: string | null;
-  food_type: string;
+  organization: string | null;
+  requested_item: string;
   quantity: string;
   location: string;
   description: string | null;
-  available_until: string;
+  needed_by: string;
   status: string;
   created_at: string;
-  user_id?: string | null;
 }
 
 const formatDate = (iso: string | null) => {
@@ -62,14 +61,14 @@ const Donate = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`${API_URL}/donations/food`);
+        const response = await fetch(`${API_URL}/food-requests`);
         if (!response.ok) {
-          throw new Error('Failed to load food requests');
+          throw new Error('Failed to load requests');
         }
         const data = await response.json();
         setRequests((data.data || []) as FoodRequest[]);
       } catch (err) {
-        setError((err as Error).message || 'Failed to load food requests');
+        setError((err as Error).message || 'Failed to load requests');
       } finally {
         setLoading(false);
       }
@@ -176,7 +175,7 @@ const Donate = () => {
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
                       <CardTitle className="text-lg line-clamp-2">
-                        {request.food_type}
+                        {request.requested_item}
                       </CardTitle>
                       <Badge variant={request.status === 'available' ? 'default' : 'secondary'}>
                         {request.status}
@@ -187,7 +186,7 @@ const Donate = () => {
                     <div className="flex items-start space-x-2 text-sm">
                       <User className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0" />
                       <div>
-                        <p className="font-medium text-gray-900">{request.contact_person}</p>
+                        <p className="font-medium text-gray-900">{request.requester_name}</p>
                       </div>
                     </div>
 
@@ -201,7 +200,7 @@ const Donate = () => {
                     <div className="flex items-start space-x-2 text-sm">
                       <MapPin className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0" />
                       <div>
-                        <p className="text-gray-600">Organization: {request.organization}</p>
+                        <p className="text-gray-600">Organization: {request.organization || 'Individual'}</p>
                         <p className="text-gray-600">Location: {request.location}</p>
                       </div>
                     </div>
@@ -224,7 +223,7 @@ const Donate = () => {
 
                     <div className="flex items-center space-x-2 text-sm">
                       <Calendar className="h-4 w-4 text-gray-500 flex-shrink-0" />
-                      <p className="text-gray-600">Needed by: {formatDate(request.available_until)}</p>
+                      <p className="text-gray-600">Needed by: {formatDate(request.needed_by)}</p>
                     </div>
 
                     {request.description && (
