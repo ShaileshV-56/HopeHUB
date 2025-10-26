@@ -12,6 +12,7 @@ import FindDonors from "./pages/FindDonors";
 import RegisterDonor from "./pages/RegisterDonor";
 import Organizations from "./pages/Organizations";
 import RegisterOrganization from "./pages/RegisterOrganization";
+import RequestFood from "./pages/RequestFood";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Privacy from "./pages/Privacy";
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/donate" element={<ProtectedRoute><Donate /></ProtectedRoute>} />
+            <Route path="/request-food" element={<ProtectedRoute><RequestFood /></ProtectedRoute>} />
             <Route path="/find-donors" element={<ProtectedRoute><FindDonors /></ProtectedRoute>} />
             <Route path="/register-donor" element={<ProtectedRoute><RegisterDonor /></ProtectedRoute>} />
             <Route path="/organizations" element={<Organizations />} />

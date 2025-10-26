@@ -6,22 +6,27 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Heart, ArrowLeft, MapPin, Phone, Mail, Calendar, Filter, Package, User } from "lucide-react";
 import { API_URL } from "../config/backend";
+import { Slider } from "@/components/ui/slider";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useAuth } from "@/contexts/AuthContext";
+import { foodRequestApi } from "@/services/api";
 import Header from "@/components/Header";
 
 interface FoodRequest {
   id: string;
-  organization: string;
-  contact_person: string;
+  requester_name: string;
   phone: string;
   email: string | null;
-  food_type: string;
+  organization: string | null;
+  requested_item: string;
   quantity: string;
   location: string;
   description: string | null;
-  available_until: string;
+  needed_by: string;
   status: string;
   created_at: string;
-  user_id?: string | null;
+  requested_total?: number;
+  pledged_total?: number;
 }
 
 const formatDate = (iso: string | null) => {
@@ -56,20 +61,22 @@ const Donate = () => {
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [availableOnly, setAvailableOnly] = useState(false);
+  const { user } = useAuth();
+  const [activePledge, setActivePledge] = useState<{ id: string; value: number } | null>(null);
 
   useEffect(() => {
     const fetchRequests = async () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`${API_URL}/donations/food`);
+        const response = await fetch(`${API_URL}/food-requests`);
         if (!response.ok) {
-          throw new Error('Failed to load food requests');
+          throw new Error('Failed to load requests');
         }
         const data = await response.json();
         setRequests((data.data || []) as FoodRequest[]);
       } catch (err) {
-        setError((err as Error).message || 'Failed to load food requests');
+        setError((err as Error).message || 'Failed to load requests');
       } finally {
         setLoading(false);
       }
@@ -81,15 +88,28 @@ const Donate = () => {
     const q = query.toLowerCase();
     return requests.filter((r) => {
       const matchesQuery =
-        r.organization.toLowerCase().includes(q) ||
-        r.contact_person.toLowerCase().includes(q) ||
+        (r.organization || '').toLowerCase().includes(q) ||
+        r.requester_name.toLowerCase().includes(q) ||
         r.location.toLowerCase().includes(q) ||
-        r.food_type.toLowerCase().includes(q) ||
+        r.requested_item.toLowerCase().includes(q) ||
         (r.description || '').toLowerCase().includes(q);
-      const matchesAvailable = availableOnly ? r.status === 'available' : true;
+      const matchesAvailable = availableOnly ? r.status === 'active' : true;
       return matchesQuery && matchesAvailable;
     });
   }, [requests, query, availableOnly]);
+
+  const parseRequested = (r: FoodRequest) => r.requested_total ?? (parseInt(String(r.quantity).replace(/\D/g, "")) || 0);
+  const parsePledged = (r: FoodRequest) => r.pledged_total ?? 0;
+  const remaining = (r: FoodRequest) => Math.max(0, parseRequested(r) - parsePledged(r));
+
+  const submitPledge = async (req: FoodRequest, amount: number) => {
+    const res = await foodRequestApi.pledge(req.id, String(amount));
+    if (!res.success) throw new Error(res.error || 'Failed to pledge');
+    // Refresh list
+    const response = await fetch(`${API_URL}/food-requests`);
+    const data = await response.json();
+    setRequests((data.data || []) as FoodRequest[]);
+  };
 
   return (
     <>
@@ -134,7 +154,7 @@ const Donate = () => {
                   onClick={() => setAvailableOnly(!availableOnly)}
                   className="whitespace-nowrap"
                 >
-                  {availableOnly ? "Show All" : "Available Only"}
+                  {availableOnly ? "Show All" : "Active Only"}
                 </Button>
               </div>
             </CardContent>
@@ -176,9 +196,9 @@ const Donate = () => {
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
                       <CardTitle className="text-lg line-clamp-2">
-                        {request.food_type}
+                        {request.requested_item}
                       </CardTitle>
-                      <Badge variant={request.status === 'available' ? 'default' : 'secondary'}>
+                      <Badge variant={request.status === 'active' ? 'default' : 'secondary'}>
                         {request.status}
                       </Badge>
                     </div>
@@ -187,21 +207,21 @@ const Donate = () => {
                     <div className="flex items-start space-x-2 text-sm">
                       <User className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0" />
                       <div>
-                        <p className="font-medium text-gray-900">{request.contact_person}</p>
+                        <p className="font-medium text-gray-900">{request.requester_name}</p>
                       </div>
                     </div>
 
                     <div className="flex items-start space-x-2 text-sm">
                       <Package className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0" />
                       <div>
-                        <p className="text-gray-600">Quantity: {request.quantity}</p>
+                        <p className="text-gray-600">Requested: {parseRequested(request)} | Pledged: {parsePledged(request)} | Remaining: {remaining(request)}</p>
                       </div>
                     </div>
 
                     <div className="flex items-start space-x-2 text-sm">
                       <MapPin className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0" />
                       <div>
-                        <p className="text-gray-600">Organization: {request.organization}</p>
+                        <p className="text-gray-600">Organization: {request.organization || 'Individual'}</p>
                         <p className="text-gray-600">Location: {request.location}</p>
                       </div>
                     </div>
@@ -224,7 +244,7 @@ const Donate = () => {
 
                     <div className="flex items-center space-x-2 text-sm">
                       <Calendar className="h-4 w-4 text-gray-500 flex-shrink-0" />
-                      <p className="text-gray-600">Needed by: {formatDate(request.available_until)}</p>
+                      <p className="text-gray-600">Needed by: {formatDate(request.needed_by)}</p>
                     </div>
 
                     {request.description && (
@@ -238,6 +258,36 @@ const Donate = () => {
                         Submitted: {formatDateTime(request.created_at)}
                       </p>
                     </div>
+
+                    {user && request.status === 'active' && remaining(request) > 0 && (
+                      <div className="pt-3 border-t">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button className="w-full">Donate to this request</Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>How much would you like to donate?</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <div className="text-sm text-muted-foreground">Remaining needed: {remaining(request)}</div>
+                              <Slider
+                                defaultValue={[Math.min(remaining(request), 1)]}
+                                max={Math.max(1, remaining(request))}
+                                min={1}
+                                step={1}
+                                onValueChange={(v) => setActivePledge({ id: request.id, value: v[0] })}
+                              />
+                              <div className="text-sm">You will donate: {activePledge?.id === request.id ? activePledge.value : 1}</div>
+                              <Button onClick={async () => {
+                                const amount = activePledge?.id === request.id ? activePledge.value : 1;
+                                await submitPledge(request, amount);
+                              }}>Confirm Donation</Button>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               ))}

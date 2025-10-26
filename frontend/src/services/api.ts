@@ -118,6 +118,38 @@ export const donationRequestApi = {
   },
 };
 
+// Food Requests APIs (recipients requesting aid)
+export const foodRequestApi = {
+  create: async (data: any) => {
+    return apiCall('/food-requests', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+  pledge: async (id: string, quantity: string) => {
+    return apiCall(`/food-requests/${id}/pledges`, {
+      method: 'POST',
+      body: JSON.stringify({ quantity }),
+    });
+  },
+  getAll: async () => {
+    return apiCall('/food-requests', {
+      method: 'GET',
+    });
+  },
+  getById: async (id: string) => {
+    return apiCall(`/food-requests/${id}`, {
+      method: 'GET',
+    });
+  },
+  update: async (id: string, data: any) => {
+    return apiCall(`/food-requests/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+};
+
 // Authentication APIs
 export const authApi = {
   signup: async (userData: { name: string; email: string; password: string }) => {

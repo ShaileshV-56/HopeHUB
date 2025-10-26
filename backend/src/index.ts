@@ -8,6 +8,7 @@ import { healthRouter } from './routes/health';
 import { foodDonationsRouter } from './routes/foodDonations';
 import { organizationsRouter } from './routes/organizations';
 import { donationRequestsRouter } from './routes/donationRequests';
+import { foodRequestsRouter } from './routes/foodRequests';
 import { authRouter } from './routes/auth';
 import { statsRouter } from './routes/stats';
 
@@ -22,6 +23,7 @@ app.use('/api', healthRouter);
 app.use('/api/donations/food', foodDonationsRouter);
 app.use('/api/organizations', organizationsRouter);
 app.use('/api/donation-requests', donationRequestsRouter);
+app.use('/api/food-requests', foodRequestsRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/stats', statsRouter);
 
