@@ -91,7 +91,7 @@ const Features = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/donate">
                 <Button size="lg" className="bg-white text-primary hover:bg-white/90">
-                  Start Donating Today
+                  Donate
                 </Button>
               </Link>
               <Link to="/about">

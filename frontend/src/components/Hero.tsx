@@ -42,7 +42,7 @@ const Hero = () => {
             <div className="flex flex-col sm:flex-row gap-4 mb-12">
               <Link to="/donate">
                 <Button size="lg" className="bg-white text-primary hover:bg-white/90">
-                  Donate Food
+                  Donate
                 </Button>
               </Link>
               <Link to="/find-donors">

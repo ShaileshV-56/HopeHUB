@@ -16,8 +16,8 @@ const Header = () => {
   };
 
   const navItems = [
-    { name: "Request Food", href: "/request-food", icon: MapPin },
-    { name: "Donate Food", href: "/donate", icon: Heart },
+    { name: "Request", href: "/request-food", icon: MapPin },
+    { name: "Donate", href: "/donate", icon: Heart },
     { name: "Organizations", href: "/organizations", icon: Users },
     { name: "Register Organization", href: "/register-organization", icon: Users },
   ];
