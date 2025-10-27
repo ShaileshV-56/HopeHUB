@@ -108,7 +108,7 @@ const Hero = () => {
                   Access real-time emergency reports and resources. Coordinate response 
                   efforts and distribute aid efficiently during critical situations.
                 </p>
-                <Link to="/find-donors">
+                <Link to="/organizations">
                   <Button className="w-full mt-4" variant="outline">
                     Registered Organizations
                   </Button>
