@@ -29,7 +29,7 @@ export async function sendEmail(options: SendEmailOptions): Promise<void> {
       body: JSON.stringify({
         sender: {
           name: 'HopeHUB',
-          email: 'noreply@hopehub.com',
+          email: 'karthikeyannaren4@gmail.com',
         },
         to: options.to,
         subject: options.subject,
