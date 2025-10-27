@@ -87,9 +87,9 @@ const Hero = () => {
                   Turn your skills and resources into hope. Connect with emergency situations 
                   and make a direct impact in your community during crises.
                 </p>
-                <Link to="/donate">
+                <Link to="/register-donor">
                   <Button className="w-full mt-4" variant="outline">
-                    Register Food Donation
+                    Register for Donations
                   </Button>
                 </Link>
               </Card>
