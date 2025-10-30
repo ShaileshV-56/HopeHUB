@@ -85,3 +85,9 @@ Base URL: `http://localhost:5000/api`
 - `GET /stats` — Aggregated metrics
 
 Note: There is no Supabase or blood-donor functionality in this project.
+<<<<<<< HEAD
+=======
+
+## License
+MIT
+>>>>>>> e53fd9e621b0c520402741fd35817f5fccb361ae
