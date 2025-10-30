@@ -45,13 +45,13 @@ const Hero = () => {
                   Donate
                 </Button>
               </Link>
-              <Link to="/find-donors">
+              <Link to="/request-food">
                 <Button 
                   size="lg" 
                   variant="outline"
                   className="border-white/30 text-white hover:bg-white/10"
                 >
-                  Find Food
+                  Request Food
                 </Button>
               </Link>
             </div>
@@ -87,9 +87,9 @@ const Hero = () => {
                   Turn your skills and resources into hope. Connect with emergency situations 
                   and make a direct impact in your community during crises.
                 </p>
-                <Link to="/register-donor">
+                <Link to="/register-organization">
                   <Button className="w-full mt-4" variant="outline">
-                    Register for Donations
+                    Register Organization
                   </Button>
                 </Link>
               </Card>
