@@ -29,7 +29,7 @@ const About = () => {
             About HopeHUB
           </h1>
           <p className="text-white/90 text-lg max-w-2xl mx-auto">
-            Fighting hunger together through innovative technology and community collaboration
+            Mobilizing resources through innovative technology and community collaboration
           </p>
         </div>
 
@@ -45,8 +45,8 @@ const About = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground leading-relaxed">
-                  To eliminate food waste and hunger by connecting food donors with those in need through 
-                  our smart platform, creating a sustainable and efficient food distribution network.
+                  To reduce waste and unmet needs by connecting resource donors with those in need through 
+                  our smart platform, creating a sustainable and efficient resource distribution network.
                 </p>
               </CardContent>
             </Card>
@@ -60,8 +60,8 @@ const About = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground leading-relaxed">
-                  A world where no food goes to waste and no one goes hungry. We envision communities 
-                  united in the fight against hunger through technology and compassion.
+                  A world where no resources go to waste and no one is left without essential support. We envision communities 
+                  united in the spirit of care through technology and compassion.
                 </p>
               </CardContent>
             </Card>
@@ -81,7 +81,7 @@ const About = () => {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
                 <div>
                   <div className="text-3xl font-bold text-primary mb-2">50,000+</div>
-                  <div className="text-sm text-muted-foreground">Meals Donated</div>
+                  <div className="text-sm text-muted-foreground">Resources Donated</div>
                 </div>
                 <div>
                   <div className="text-3xl font-bold text-success mb-2">1,200+</div>
@@ -93,7 +93,7 @@ const About = () => {
                 </div>
                 <div>
                   <div className="text-3xl font-bold text-info mb-2">5000+</div>
-                  <div className="text-sm text-muted-foreground">People Fed</div>
+                  <div className="text-sm text-muted-foreground">People Helped</div>
                 </div>
               </div>
             </CardContent>

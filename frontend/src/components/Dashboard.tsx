@@ -117,7 +117,7 @@ const Dashboard = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Real-Time Food Donation Dashboard
+            Real-Time Resource Donation Dashboard
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Track available donations, monitor expiry times, and coordinate efficient distribution
@@ -180,10 +180,10 @@ const Dashboard = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <AlertCircle className="h-5 w-5 text-warning" />
-              Active Food Donations
+              Active Resource Donations
             </CardTitle>
             <CardDescription>
-              Real-time listings of available food donations sorted by urgency
+              Real-time listings of available resource donations sorted by urgency
             </CardDescription>
           </CardHeader>
           <CardContent>

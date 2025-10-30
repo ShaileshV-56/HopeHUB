@@ -59,7 +59,7 @@ const RecipeSuggestions = () => {
       servings: 4,
       difficulty: "Easy",
       description: "Comforting one-pot meal that's easy to digest and very nutritious.",
-      category: "Comfort Food"
+      category: "Comfort Meal"
     },
     {
       id: 5,

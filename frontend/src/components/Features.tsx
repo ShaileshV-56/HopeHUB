@@ -14,31 +14,31 @@ const Features = () => {
     {
       icon: Clock,
       title: "Real-Time Expiry Tracking",
-      description: "Monitor food freshness with automated alerts and priority queuing based on expiration times.",
+      description: "Monitor perishable items with automated alerts and priority queuing based on expiration times.",
       color: "text-warning"
     },
     {
       icon: Users,
       title: "Community Network",
-      description: "Connect restaurants, grocery stores, NGOs, food banks, and volunteers in one unified platform.",
+      description: "Connect restaurants, grocery stores, NGOs, partners, and volunteers in one unified platform.",
       color: "text-info"
     },
     {
       icon: TrendingUp,
       title: "Impact Analytics",
-      description: "Track your contribution with detailed reports on meals saved, people fed, and environmental impact.",
+      description: "Track your contribution with detailed reports on people helped and environmental impact.",
       color: "text-primary"
     },
     {
       icon: Bell,
       title: "Instant Notifications",
-      description: "Get real-time alerts for new donations, pickup schedules, and urgent food distribution needs.",
+      description: "Get real-time alerts for new donations, pickup schedules, and urgent distribution needs.",
       color: "text-secondary"
     },
     {
       icon: Shield,
       title: "Verified Organizations",
-      description: "All registered NGOs and food banks are verified to ensure food reaches legitimate beneficiaries.",
+      description: "All registered NGOs and partners are verified to ensure aid reaches legitimate beneficiaries.",
       color: "text-destructive"
     }
   ];
@@ -51,7 +51,7 @@ const Features = () => {
             Powerful Features for Maximum Impact
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Our platform leverages cutting-edge technology to streamline food donation processes, 
+            Our platform leverages cutting-edge technology to streamline resource donation processes, 
             reduce waste, and ensure efficient distribution to those who need it most.
           </p>
         </div>

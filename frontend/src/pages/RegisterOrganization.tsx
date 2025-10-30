@@ -305,7 +305,7 @@ const RegisterOrganization = () => {
                     <Label htmlFor="specialization">Specialization (optional)</Label>
                     <Input
                       id="specialization"
-                      placeholder="e.g., Food distribution, Shelter"
+                      placeholder="e.g., Resource distribution, Shelter"
                       value={formData.specialization}
                       onChange={(e) => handleInputChange("specialization", e.target.value)}
                     />

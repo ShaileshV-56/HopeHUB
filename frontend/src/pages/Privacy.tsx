@@ -54,7 +54,7 @@ const Privacy = () => {
               <p>
                 At HopeHUB, we are committed to protecting your privacy and ensuring the security of your personal information.
                 This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our 
-                food donation platform.
+                resources donation platform.
               </p>
             </CardContent>
           </Card>
@@ -100,7 +100,7 @@ const Privacy = () => {
             </CardHeader>
             <CardContent className="prose prose-sm max-w-none">
               <ul className="list-disc pl-6 space-y-2">
-                <li>Facilitate food donations and connections between donors and recipients</li>
+                <li>Facilitate resource donations and connections between donors and recipients</li>
                 <li>Verify the identity of organizations and ensure platform security</li>
                 <li>Send notifications about donation opportunities and platform updates</li>
                 <li>Analyze platform usage to improve our services</li>
@@ -140,7 +140,7 @@ const Privacy = () => {
             <CardContent className="prose prose-sm max-w-none">
               <p>We may share your information in the following circumstances:</p>
               <ul className="list-disc pl-6 space-y-1 mt-3">
-                <li>With verified NGOs and food banks to facilitate donations</li>
+                <li>With verified NGOs and partners to facilitate donations</li>
                 <li>With service providers who assist in platform operations</li>
                 <li>When required by law or to protect rights and safety</li>
                 <li>With your explicit consent for specific purposes</li>

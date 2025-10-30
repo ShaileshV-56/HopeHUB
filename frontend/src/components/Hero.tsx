@@ -18,7 +18,7 @@ const Hero = () => {
       <div className="absolute inset-0">
         <img 
           src={heroImage} 
-          alt="Food donation community" 
+          alt="Resources donation community" 
           className="w-full h-full object-cover opacity-20"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-primary/60" />
@@ -51,7 +51,7 @@ const Hero = () => {
                   variant="outline"
                   className="border-white/30 text-white hover:bg-white/10"
                 >
-                  Request Food
+                  Request Resources
                 </Button>
               </Link>
             </div>
