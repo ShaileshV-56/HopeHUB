@@ -152,10 +152,10 @@ const Contact = () => {
               <Card className="bg-gradient-primary shadow-large">
                 <CardContent className="p-6">
                   <h3 className="text-xl font-bold text-white mb-4">
-                    24/7 Emergency Food Distribution
+                    24/7 Emergency Resource Distribution
                   </h3>
                   <p className="text-white/90 mb-4">
-                    For urgent food distribution needs or emergencies
+                    For urgent resource distribution needs or emergencies
                   </p>
                   <div className="flex items-center space-x-2 text-white mb-4">
                     <Phone className="h-5 w-5" />

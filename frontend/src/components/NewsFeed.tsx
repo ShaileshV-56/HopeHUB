@@ -64,7 +64,7 @@ const NewsFeed = () => {
     return (
       <Card className="bg-gradient-card shadow-soft">
         <CardHeader>
-          <CardTitle>Food Security News</CardTitle>
+          <CardTitle>Community Resources News</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -86,7 +86,7 @@ const NewsFeed = () => {
       <CardHeader>
         <CardTitle className="text-lg font-semibold text-primary flex items-center gap-2">
           <Clock className="h-5 w-5" />
-          Food Security News
+          Community Resources News
         </CardTitle>
       </CardHeader>
       <CardContent>

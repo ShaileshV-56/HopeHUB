@@ -103,7 +103,7 @@ const Auth = () => {
             <Heart className="h-12 w-12 text-white" />
             <span className="text-4xl font-bold text-white">HopeHUB</span>
           </Link>
-          <p className="text-white/80">Food & Shelter Aid Platform</p>
+          <p className="text-white/80">Resources & Shelter Aid Platform</p>
         </div>
 
         <Card className="shadow-xl">

@@ -42,7 +42,7 @@ const QuotesWidget = () => {
       author: "H. Jackson Brown Jr."
     },
     {
-      text: "Food is meant to be shared. It's not just about calories and nutrients.",
+      text: "Resources are meant to be shared. It's not just about things, it's about care.",
       author: "José Andrés"
     },
     {

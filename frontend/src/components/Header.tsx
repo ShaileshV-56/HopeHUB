@@ -33,7 +33,7 @@ const Header = () => {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white">HopeHUB</h1>
-              <p className="text-white/80 text-xs">Food & Shelter Aid Platform</p>
+              <p className="text-white/80 text-xs">Resources & Shelter Aid Platform</p>
             </div>
           </Link>
 

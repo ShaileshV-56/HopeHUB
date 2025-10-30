@@ -68,9 +68,9 @@ const Terms = () => {
             </CardHeader>
             <CardContent className="prose prose-sm max-w-none">
               <p>
-                HopeHUB is a digital platform that connects food donors (restaurants, grocery stores, 
-                individuals) with organizations that distribute food to those in need (NGOs, food banks, 
-                community centers). We facilitate these connections but do not directly handle food donations.
+                HopeHUB is a digital platform that connects resource donors (restaurants, grocery stores, individuals, companies)
+                with organizations that distribute resources to those in need (NGOs, community centers, partners). We facilitate
+                these connections but do not directly handle donations.
               </p>
             </CardContent>
           </Card>
@@ -82,12 +82,12 @@ const Terms = () => {
             </CardHeader>
             <CardContent className="prose prose-sm max-w-none space-y-4">
               <div>
-                <h4 className="font-semibold mb-2">For Food Donors:</h4>
+                <h4 className="font-semibold mb-2">For Donors:</h4>
                 <ul className="list-disc pl-6 space-y-1">
-                  <li>Ensure all donated food is safe for consumption and meets health standards</li>
-                  <li>Provide accurate information about food types, quantities, and expiration dates</li>
+                  <li>Ensure all donated resources are safe, lawful, and appropriate for use</li>
+                  <li>Provide accurate information about item types, quantities, and condition</li>
                   <li>Honor commitments made through the platform</li>
-                  <li>Comply with local food safety regulations</li>
+                  <li>Comply with all applicable regulations for your donated items</li>
                 </ul>
               </div>
               
@@ -95,9 +95,9 @@ const Terms = () => {
                 <h4 className="font-semibold mb-2">For Recipients/Organizations:</h4>
                 <ul className="list-disc pl-6 space-y-1">
                   <li>Verify legitimacy and provide accurate organization information</li>
-                  <li>Handle received food safely and distribute to intended beneficiaries</li>
+                  <li>Handle received resources responsibly and distribute to intended beneficiaries</li>
                   <li>Respect pickup times and communication with donors</li>
-                  <li>Maintain transparency in food distribution activities</li>
+                  <li>Maintain transparency in distribution activities</li>
                 </ul>
               </div>
             </CardContent>
@@ -108,7 +108,7 @@ const Terms = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <AlertTriangle className="h-6 w-6 text-warning" />
-                Food Safety & Liability
+                Safety & Liability
               </CardTitle>
             </CardHeader>
             <CardContent className="prose prose-sm max-w-none">
@@ -116,14 +116,13 @@ const Terms = () => {
                 <strong>Important:</strong> HopeHUB serves as a connecting platform only. We do not:
               </p>
               <ul className="list-disc pl-6 space-y-1 mt-3">
-                <li>Inspect, test, or guarantee the safety of donated food</li>
-                <li>Take responsibility for food safety or quality</li>
-                <li>Assume liability for any health issues related to donated food</li>
-                <li>Control the actual transfer or handling of food items</li>
+                <li>Inspect, test, or guarantee the safety or quality of donated items</li>
+                <li>Assume liability for any issues related to donated items</li>
+                <li>Control the actual transfer or handling of donated items</li>
               </ul>
               <p className="mt-3">
-                All users participate at their own risk and are responsible for ensuring food safety compliance 
-                according to local laws and regulations.
+                All users participate at their own risk and are responsible for ensuring compliance with local laws and regulations
+                applicable to their donations and activities.
               </p>
             </CardContent>
           </Card>
@@ -136,12 +135,12 @@ const Terms = () => {
             <CardContent className="prose prose-sm max-w-none">
               <p>Users may not:</p>
               <ul className="list-disc pl-6 space-y-1 mt-3">
-                <li>Use the platform for commercial food sales</li>
+                <li>Use the platform for commercial sales</li>
                 <li>Provide false or misleading information</li>
                 <li>Engage in fraudulent or deceptive practices</li>
                 <li>Violate any applicable laws or regulations</li>
                 <li>Interfere with platform security or functionality</li>
-                <li>Use the platform for any purpose other than food donation facilitation</li>
+                <li>Use the platform for any purpose other than donation facilitation</li>
               </ul>
             </CardContent>
           </Card>
@@ -176,7 +175,7 @@ const Terms = () => {
                 we disclaim all liability for:
               </p>
               <ul className="list-disc pl-6 space-y-1 mt-3">
-                <li>Food safety or quality issues</li>
+                <li>Safety or quality issues of donated items</li>
                 <li>Damages arising from platform use</li>
                 <li>Actions or omissions of platform users</li>
                 <li>Service interruptions or technical issues</li>

@@ -154,7 +154,7 @@ const RequestFood = () => {
                   <Package className="h-8 w-8 text-white" />
                 </div>
               </div>
-              <CardTitle className="text-2xl">Request Food or Resources</CardTitle>
+              <CardTitle className="text-2xl">Request Resources</CardTitle>
               <CardDescription>Tell us what you need. Organization is optional.</CardDescription>
             </CardHeader>
 

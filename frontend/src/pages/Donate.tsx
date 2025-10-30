@@ -131,7 +131,7 @@ const Donate = () => {
           </div>
 
           <div className="mb-8 text-center">
-            <h1 className="text-4xl font-bold text-white mb-2">Food & Resource Requests</h1>
+            <h1 className="text-4xl font-bold text-white mb-2">Resource Requests</h1>
             <p className="text-white/80">View all active requests from your community</p>
           </div>
 
@@ -183,7 +183,7 @@ const Donate = () => {
                 <p className="text-gray-600">
                   {query || availableOnly
                     ? "Try adjusting your filters"
-                    : "There are currently no food requests"}
+                    : "There are currently no resource requests"}
                 </p>
               </CardContent>
             </Card>
