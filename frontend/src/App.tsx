@@ -8,8 +8,6 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Donate from "./pages/Donate";
-import FindDonors from "./pages/FindDonors";
-import RegisterDonor from "./pages/RegisterDonor";
 import Organizations from "./pages/Organizations";
 import RegisterOrganization from "./pages/RegisterOrganization";
 import RequestFood from "./pages/RequestFood";
@@ -34,8 +32,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/donate" element={<ProtectedRoute><Donate /></ProtectedRoute>} />
             <Route path="/request-food" element={<ProtectedRoute><RequestFood /></ProtectedRoute>} />
-            <Route path="/find-donors" element={<ProtectedRoute><FindDonors /></ProtectedRoute>} />
-            <Route path="/register-donor" element={<ProtectedRoute><RegisterDonor /></ProtectedRoute>} />
+            {/* Donor pages removed */}
             <Route path="/organizations" element={<Organizations />} />
             <Route path="/register-organization" element={<ProtectedRoute><RegisterOrganization /></ProtectedRoute>} />
             <Route path="/about" element={<About />} />

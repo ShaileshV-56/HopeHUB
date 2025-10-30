@@ -46,24 +46,6 @@ CREATE TABLE IF NOT EXISTS public.donation_requests (
   notes TEXT
 );
 
--- blood_donors
-CREATE TABLE IF NOT EXISTS public.blood_donors (
-  id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-  full_name TEXT NOT NULL,
-  email TEXT NOT NULL,
-  phone TEXT NOT NULL,
-  blood_group TEXT NOT NULL,
-  age INTEGER NOT NULL,
-  address TEXT NOT NULL,
-  city TEXT NOT NULL,
-  state TEXT NOT NULL,
-  last_donation_date TIMESTAMPTZ,
-  available BOOLEAN NOT NULL DEFAULT true,
-  medical_conditions TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
 -- helper: update_updated_at trigger function
 CREATE OR REPLACE FUNCTION public.update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -84,17 +66,9 @@ CREATE TRIGGER update_helper_organizations_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION public.update_updated_at_column();
 
-CREATE TRIGGER update_blood_donors_updated_at
-  BEFORE UPDATE ON public.blood_donors
-  FOR EACH ROW
-  EXECUTE FUNCTION public.update_updated_at_column();
-
 -- indexes
 CREATE INDEX IF NOT EXISTS idx_food_donations_status ON public.food_donations(status);
 CREATE INDEX IF NOT EXISTS idx_food_donations_available_until ON public.food_donations(available_until);
 CREATE INDEX IF NOT EXISTS idx_donation_requests_status ON public.donation_requests(status);
 CREATE INDEX IF NOT EXISTS idx_donation_requests_donation_id ON public.donation_requests(donation_id);
 CREATE INDEX IF NOT EXISTS idx_donation_requests_helper_org_id ON public.donation_requests(helper_org_id);
-CREATE INDEX IF NOT EXISTS idx_blood_donors_blood_group ON public.blood_donors(blood_group);
-CREATE INDEX IF NOT EXISTS idx_blood_donors_city ON public.blood_donors(city);
-CREATE INDEX IF NOT EXISTS idx_blood_donors_available ON public.blood_donors(available);
