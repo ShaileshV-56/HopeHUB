@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "echo 'Skipping TypeScript build'",
-    "start": "node dist/index.js",
+    "start": "tsx src/index.ts",
     "lint": "eslint . --ext .ts,.tsx",
     "migrate:up": "tsx src/utils/migrate.ts up",
     "migrate:down": "tsx src/utils/migrate.ts down"
