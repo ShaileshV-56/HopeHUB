@@ -5,7 +5,7 @@
  */
 
 // Development backend URL
-export const BACKEND_URL = 'http://localhost:5000';
+export const BACKEND_URL = import.meta.env.VITE_API_URL || 'https://hopehub-backend.onrender.com';
 
 // API base path
 export const API_BASE_PATH = '/api';
