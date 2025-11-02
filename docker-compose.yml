@@ -1,0 +1,36 @@
+version: '3.9'
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: hopehub
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    env_file:
+      - backend/.env
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/hopehub
+      CORS_ORIGIN: http://localhost:8080
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "5000:5000"
+    command: sh -c "npm run migrate:up && npm run dev"
+
+volumes:
+  db-data:

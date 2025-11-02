@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">HopeHUB tab icon</title>
+  <desc id="desc">Two hand-drawn hearts overlapping on a transparent background</desc>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path
+      d="M208 114C194 94 172 82 148 82C116 82 90 108 90 140C90 204 162 244 208 292C254 244 326 204 326 140C326 108 300 82 268 82C244 82 222 94 208 114"
+      stroke="#d64242"
+      stroke-width="28"
+      transform="translate(-48 28) scale(1.08)"
+    />
+    <path
+      d="M208 114C194 94 172 82 148 82C116 82 90 108 90 140C90 204 162 244 208 292C254 244 326 204 326 140C326 108 300 82 268 82C244 82 222 94 208 114"
+      stroke="#f48ba3"
+      stroke-width="24"
+      transform="translate(84 96) scale(0.96)"
+    />
+  </g>
+</svg>
