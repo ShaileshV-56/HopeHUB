@@ -7,7 +7,7 @@ import { withClient } from '../db/pool';
 const registerSchema = z.object({
   organizationName: z.string().min(1),
   contactPerson: z.string().min(1),
-  phone: z.string().regex(/^\d{10}$/),
+  phone: z.string().min(1), // CHANGED: Removed strict 10-digit validation
   email: z.string().email(),
   address: z.string().min(1),
   description: z.string().optional(),
@@ -18,7 +18,7 @@ const registerSchema = z.object({
 const updateSchema = z.object({
   organizationName: z.string().min(1).optional(),
   contactPerson: z.string().min(1).optional(),
-  phone: z.string().regex(/^\d{10}$/).optional(),
+  phone: z.string().min(1).optional(), // CHANGED: Removed strict 10-digit validation
   email: z.string().email().optional(),
   address: z.string().min(1).optional(),
   capacity: z.number().int().min(0).optional(),
