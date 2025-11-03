@@ -7,32 +7,38 @@ import { withClient } from '../db/pool';
 const registerSchema = z.object({
   organizationName: z.string().min(1),
   contactPerson: z.string().min(1),
-  phone: z.string().min(1), // CHANGED: Removed strict 10-digit validation
+  phone: z.string()
+    .regex(/^\d{10}$/, { 
+      message: "Phone number must be exactly 10 digits" 
+    }),
   email: z.string().email(),
   address: z.string().min(1),
-  description: z.string().optional(),
-  capacity: z.number().int().min(0).optional(),
-  specialization: z.string().optional(),
+  description: z.string().optional().nullable(),
+  capacity: z.number().int().min(0).optional().nullable(),
+  specialization: z.string().optional().nullable(),
 });
 
 const updateSchema = z.object({
   organizationName: z.string().min(1).optional(),
   contactPerson: z.string().min(1).optional(),
-  phone: z.string().min(1).optional(), // CHANGED: Removed strict 10-digit validation
+  phone: z.string()
+    .regex(/^\d{10}$/, { 
+      message: "Phone number must be exactly 10 digits" 
+    }).optional(),
   email: z.string().email().optional(),
   address: z.string().min(1).optional(),
-  capacity: z.number().int().min(0).optional(),
-  specialization: z.string().optional(),
+  capacity: z.number().int().min(0).optional().nullable(),
+  specialization: z.string().optional().nullable(),
   status: z.string().optional(),
 });
 
 export const organizationsRouter = Router();
 
-// POST /api/organizations/register - WITH AUTH (login required)
+// POST /api/organizations/register - WITHOUT AUTH
 organizationsRouter.post('/register', validateBody(registerSchema), async (req, res, next) => {
   try {
     const body = (req as any).validatedBody as z.infer<typeof registerSchema>;
-    const userId = (req as any).user?.id; // Guaranteed to exist with requireAuth
+    const userId = (req as any).user?.id || null;
     
     const { rows } = await withClient((client) => client.query(
       `INSERT INTO helper_organizations (
@@ -47,7 +53,7 @@ organizationsRouter.post('/register', validateBody(registerSchema), async (req, 
         body.description ?? null,
         body.capacity ?? null,
         body.specialization ?? null,
-        userId, // This will always have a value with requireAuth
+        userId,
       ]
     ));
     res.status(201).json({ success: true, data: rows[0] });
