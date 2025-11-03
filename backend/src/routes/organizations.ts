@@ -28,11 +28,12 @@ const updateSchema = z.object({
 
 export const organizationsRouter = Router();
 
-// POST /api/organizations/register
-organizationsRouter.post('/register', validateBody(registerSchema), async (req, res, next) => {
+// POST /api/organizations/register - WITH AUTH (login required)
+organizationsRouter.post('/register', requireAuth, validateBody(registerSchema), async (req, res, next) => {
   try {
     const body = (req as any).validatedBody as z.infer<typeof registerSchema>;
-    const userId = (req as any).user?.id || null;
+    const userId = (req as any).user?.id; // Guaranteed to exist with requireAuth
+    
     const { rows } = await withClient((client) => client.query(
       `INSERT INTO helper_organizations (
         organization_name, contact_person, phone, email, address, description, capacity, specialization, status, user_id
@@ -46,7 +47,7 @@ organizationsRouter.post('/register', validateBody(registerSchema), async (req, 
         body.description ?? null,
         body.capacity ?? null,
         body.specialization ?? null,
-        userId,
+        userId, // This will always have a value with requireAuth
       ]
     ));
     res.status(201).json({ success: true, data: rows[0] });
