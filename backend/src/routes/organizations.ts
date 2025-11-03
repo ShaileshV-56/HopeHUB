@@ -29,7 +29,7 @@ const updateSchema = z.object({
 export const organizationsRouter = Router();
 
 // POST /api/organizations/register - WITH AUTH (login required)
-organizationsRouter.post('/register', requireAuth, validateBody(registerSchema), async (req, res, next) => {
+organizationsRouter.post('/register', validateBody(registerSchema), async (req, res, next) => {
   try {
     const body = (req as any).validatedBody as z.infer<typeof registerSchema>;
     const userId = (req as any).user?.id; // Guaranteed to exist with requireAuth
